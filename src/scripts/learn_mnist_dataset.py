@@ -8,6 +8,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import config
+assert config.TASK == "MNIST"
+
 from datagen.basic import make_batch, make_one
 from network import glimpse_network, glimpse_features
 from parameters import S0, save_params
@@ -98,7 +100,6 @@ if __name__ == "__main__":
             plot_belief(os.path.join(config.SAVE_DIR, "iter_{}_glimpse_{{}}_raster.png".format(iteration)))
             plot_prior(os.path.join(config.SAVE_DIR, "s0_raster.png"))
             glimpse_network.save(os.path.join(config.SAVE_DIR, "saved_params.npy"))
-            save_params(D_name=str(iteration))
             save_params()
 
     plot_belief(os.path.join(config.SAVE_DIR, "iter_{}_glimpse_{{}}_raster.png").format("final"))

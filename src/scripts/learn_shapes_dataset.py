@@ -8,10 +8,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import config
+assert config.TASK == "SHAPES"
+
 from shapes.properties import N_objects
 from datagen.shapes_data import make_batch, make_one, super_make_one
 from network import glimpse_network, glimpse_features
-from parameters import S0, save_params, separated_D
+from parameters import S0, save_params
 from position_encoding import L
 from train import train
 from visualize import raster
@@ -28,7 +30,7 @@ def plot_belief(filename_base):
     glimpses = glimpses # / 255.0
 
     S = S0.get_value()
-    for i in range(5):
+    for i in range(config.GLIMPSES):
         g = ComplexTuple(*predict(glimpses[i][None]))
         S = (S + g * L.encode_numeric(glimpse_xy[i] / config.POS_SCALE)).reshape((1024,))
         belief = raster(S.real, S.imag)
@@ -89,7 +91,9 @@ if __name__ == "__main__":
             plot_belief(os.path.join(config.SAVE_DIR, "iter_{}_glimpse_{{}}_raster.png".format(iteration)))
             glimpse_network.save(os.path.join(config.SAVE_DIR, "saved_params.npy"))
             plot_prior(os.path.join(config.SAVE_DIR, "s0_raster.png"))
+            save_params()
 
     plot_belief(os.path.join(config.SAVE_DIR, "iter_{}_glimpse_{{}}_raster.png").format("final"))
     plot_prior(os.path.join(config.SAVE_DIR, "s0_raster.png"))
     glimpse_network.save(os.path.join(config.SAVE_DIR, "saved_params.npy"))
+    save_params()

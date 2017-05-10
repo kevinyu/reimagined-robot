@@ -77,11 +77,10 @@ glimpse_network = GlimpseModel(
         n_hidden=config.HIDDEN_LAYERS,
         n_out=config.DIM)
 
-if config.LOAD_PREEXISTING:
-    try:
-        glimpse_network.load_params(os.path.join(config.SAVE_DIR, "saved_params.npy"))
-    except:
-        print "couldn't load preexisting network weights"
+try:
+    glimpse_network.load_params(os.path.join(config.SAVE_DIR, "saved_params.npy"))
+except:
+    print "couldn't load preexisting network weights"
 
 glimpse_network_output_batch = glimpse_network.output.reshape((
     _batch_size, _n_glimpses, config.DIM

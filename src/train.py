@@ -11,8 +11,8 @@ from network import (
     glimpse_network_output_batch,
 )
 from optimizers import adam
-from parameters import S0, D
 from position_encoding import L
+from parameters import S0, D, learn_params
 
 
 # This code is necessarily more complex than the basic code for glimpsing
@@ -43,27 +43,10 @@ sampled_belief = T.nnet.softmax(
 
 sampled_labels = sample_labels.dimshuffle(0, "x", 1, 2)
 
-digit_magnitudes = T.sqrt((D * D.conj).real.sum(axis=0))
-digit_norms = T.outer(digit_magnitudes, digit_magnitudes)
-mean_digit_similarity = (D.T.dot(D.conj).real / digit_norms).mean()
+# Cross entropy calculation at all sampled points
+cost = (-T.sum(sampled_labels * T.log(sampled_belief), axis=1)).mean()
 
-# TODO debut the digit similarity cost
-cost = (
-    (-T.sum(sampled_labels * T.log(sampled_belief), axis=1)).mean() +
-    config.DICT_SIM_ALPHA * mean_digit_similarity
-)
-
-if config.LEARN_D:
-    if config.SHAPES:
-        params = glimpse_network.params + [S0.real, S0.imag]
-        from parameters import D_table
-        for k, v in D_table.items():
-            params += [v.real, v.imag]
-    else:
-        params = glimpse_network.params + [S0.real, S0.imag, D.real, D.imag]
-else:
-    params = glimpse_network.params + [S0.real, S0.imag]
-
+params = glimpse_network.params + learn_params
 
 updates = adam(cost, params)
 
