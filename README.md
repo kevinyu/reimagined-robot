@@ -1,4 +1,5 @@
 # PUth this in a ~/.theanorc (replace cuda with where cuda is)
+# oh this hints for myself on how to use the gpu... dont listen to me I broke my computer
 
 [nvcc]
 flags=-D_FORCE_INLINES
@@ -9,10 +10,11 @@ root=/usr/loca/cuda-8.0/
 [global]
 device = gpu
 floatX = float32
-# warn_float64=pdb
 
 
 # DUDE DO THIS TOO
+
+(Okay the point of this is basically to add the src directory to front of PYTHONPATH)
 
 edit your conda environment activation script at 
 
