@@ -36,3 +36,27 @@ and add two directories, etc/conda/activate.d
  NOICE!!!!!
 
 and set the right environment variables for most goodest stuff
+
+
+# Running junk
+
+heres some hints how to run stuff... most of it probably doesnt work
+
+you should proably modify the SAVE_DIR in the config.py before running a new setting or clear out the directory
+it saves intermediate parameters
+
+### MNIST (this used to work, but dont know if it does anymore)
+
+you must set SHAPES = False in the config.py
+
+then `python scripts/learn_mnist_dataset.py`
+
+### Shapes shapes shapes
+
+you must set SHAPES = True in the config.py
+open shapes/properties/__init__.py to modify what shapes and settings are in play and shit
+    - modify the individual classes to change what transformations are available
+    - modify the properties list in that file to change which properties are available
+
+then `python scripts/learn_shapes_dataset.py` for relief
+
