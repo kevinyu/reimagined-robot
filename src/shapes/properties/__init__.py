@@ -13,14 +13,14 @@ class Property(object):
 
 class Color(Property):
     params = [
-        # "white",
+        "white",
         "red",
         "green",
-        # "blue",
-        # "something",
-        # "or another",
-        # "or another one",
-    ]
+        "blue",
+        "something",
+        "or another",
+        "or another one",
+        ][:config.COLOR_CHOICES]
 
     @classmethod
     def transform(cls, obj, params):
@@ -49,7 +49,7 @@ class Scale(Property):
         "0.75",
         "1.0",
         "1.25"
-    ]
+    ][:config.SCALE_CHOICES]
 
     @classmethod
     def transform(cls, obj, params):
@@ -62,14 +62,7 @@ class Rotation(Property):
         "0.0",
         "20.0",
         "-20.0",
-        # "45.0",
-        # "90.0",
-        # "135.0",
-        # "180.0",
-        # "-45.0",
-        # "-90.0",
-        #"-135.0",
-    ]
+    ][:config.ROTATION_CHOICES]
 
     @classmethod
     def transform(cls, obj, params):
@@ -77,11 +70,14 @@ class Rotation(Property):
         return imrotate(np.array(obj, dtype=np.uint8), rot)
 
 
-properties = [
-    Color,
-    # Scale,
-    # Rotation,
-]
+properties = []
+if config.COLOR_CHOICES:
+    properties.append(Color)
+if config.SCALE_CHOICES:
+    properties.append(Scale)
+if config.ROTATION_CHOICES:
+    properties.append(Rotation)
+
 
 property_combinations = []
 N_objects = len(objects.shapes)
@@ -104,7 +100,7 @@ class Scene(object):
         """
         dx, dy = obj.shape[:2]
         what_used_to_be_there = self.img[x_min:x_min + dx, y_min:y_min + dy]
-        self.img[x_min:x_min + dx, y_min:y_min + dy] = np.maximum(what_used_to_be_there, obj[:, :, None])
+        self.img[x_min:x_min + dx, y_min:y_min + dy] = np.maximum(what_used_to_be_there, obj[:, :])
 
 
 def generate():
@@ -114,7 +110,7 @@ def generate():
     metadata on object identities and properties
     actual data of images and object info
     """
-    scene = Scene(config.IMG_SIZE, color_channels=config.COLOR_CHANNELS)
+    scene = Scene(config.IMG_SIZE[0], color_channels=config.COLOR_CHANNELS)
 
     labels = []
 

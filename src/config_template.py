@@ -9,6 +9,10 @@ IMG_SIZE = (100, 100)
 OBJ_SIZE = 30
 LABEL_RADIUS = OBJ_SIZE
 
+COLOR_CHOICES = 2  # max 7
+SCALE_CHOICES = 0
+ROTATION_CHOICES = 0
+
 GLIMPSE_WIDTH = 29
 GLIMPSES = 3
 
@@ -22,7 +26,6 @@ BATCH_SIZE = 30
 SAVE_EVERY = 100
 
 SAVE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "outputs")
-
 
 ### Other stuff
 

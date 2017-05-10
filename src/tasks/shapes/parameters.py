@@ -60,9 +60,11 @@ for prop in properties:
 
 # Generate all bound combinations of available objects with properties
 _D_combined = D_table["Shapes"]
+
 for i, prop in enumerate(properties):
     # each iteration increases the dimensionality of D_combined by one
     # the last dimension corresponds to the ith property
+    i += 1
     _D_combined = (
         _D_combined.dimshuffle([0] + range(1, i+1) + ["x"]) *
         D_table[prop.__name__].dimshuffle(*[[0] + (["x"] * i) + [1]])
@@ -106,7 +108,7 @@ def save_params():
 
     for prop in properties:
         D_filename = os.path.join(config.SAVE_DIR, "D_{}".format(prop.__name__))
-        np.save(D_filename, np.array(D_table[prop.__name__].get_value()))
+        np.save(D_filename, np.array(list(D_table[prop.__name__].get_value())))
 
-    np.save(os.path.join(config.SAVE_DIR, "D_bg"), np.array([x[0] for x in bg_vector.get_value()]))
+    np.save(os.path.join(config.SAVE_DIR, "D_bg"), np.array(list(bg_vector.get_value())))
 
