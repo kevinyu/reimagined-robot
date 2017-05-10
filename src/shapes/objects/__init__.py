@@ -2,7 +2,7 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
-from shapes.config import OBJ_SIZE
+from config import OBJ_SIZE
 
 
 z = 1.0 / np.sqrt(2)

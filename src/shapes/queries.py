@@ -1,7 +1,7 @@
 from shapes.properties import properties
 from shapes.objects import shapes
 import numpy as np
-import shapes.config as config
+import config
 
 
 def label_at(scene_label, x, y, radius=config.LABEL_RADIUS):

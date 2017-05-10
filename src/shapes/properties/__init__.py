@@ -1,8 +1,7 @@
 import numpy as np
 from scipy.misc import imresize, imrotate
 
-from config import COLOR_CHANNELS
-import shapes.config as config
+import config
 from shapes import objects
 
 
@@ -16,7 +15,7 @@ class Color(Property):
     params = [
         # "white",
         "red",
-        # "green",
+        "green",
         # "blue",
         # "something",
         # "or another",
@@ -79,7 +78,7 @@ class Rotation(Property):
 
 
 properties = [
-    # Color,
+    Color,
     # Scale,
     # Rotation,
 ]
@@ -115,7 +114,7 @@ def generate():
     metadata on object identities and properties
     actual data of images and object info
     """
-    scene = Scene(config.IMG_SIZE, color_channels=COLOR_CHANNELS)
+    scene = Scene(config.IMG_SIZE, color_channels=config.COLOR_CHANNELS)
 
     labels = []
 
