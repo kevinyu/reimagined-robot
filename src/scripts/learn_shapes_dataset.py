@@ -12,7 +12,7 @@ assert config.TASK == "SHAPES"
 
 from shapes.properties import N_objects
 from datagen.shapes_data import make_batch, make_one, super_make_one
-from network import glimpse_network, glimpse_features
+from network import glimpse_network_output, glimpse_features
 from parameters import S0, save_params
 from position_encoding import L
 from train import train
@@ -21,7 +21,7 @@ from utils.complex import ComplexTuple
 
 predict = theano.function(
         inputs=[glimpse_features],   # _ x N dimensional matrix
-        outputs=glimpse_network.output,
+        outputs=glimpse_network_output,
         allow_input_downcast=True)
 
 
@@ -56,9 +56,8 @@ def plot_belief(filename_base):
             bounds_y = config.GLIMPSE_ON(y)
             plt.hlines(bounds_x, bounds_y[0], bounds_y[1], color="red")
             plt.vlines(bounds_y, bounds_x[0], bounds_x[1], color="red")
+        plt.scatter(sample_xy[:, 0], sample_xy[:, 1], s=2)
 
-        plt.subplot(6, 5, 1)
-        plt.imshow(scene.img)
         plt.savefig(filename_base.format(i), format="png", dpi=400)
         plt.close()
 

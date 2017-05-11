@@ -5,10 +5,11 @@ import theano.tensor as T
 import config
 from glimpse import accumulate_glimpses_over_batch
 from network import (
-    glimpse_network,
     glimpse_features,
     glimpse_features_batch,
-    glimpse_network_output_batch,
+    glimpse_network_output,
+    network_params,
+    networks
 )
 from optimizers import adam
 from position_encoding import L
@@ -30,7 +31,7 @@ sample_labels = T.ftensor3("sample_labels")
 _batch_size, _n_glimpses, _ = glimpse_positions.shape
 
 # Convert to batch_size x n_glimpses x n_samples x DIM tensor
-S = glimpse_network.output.reshape((_batch_size, _n_glimpses, config.DIM))
+S = glimpse_network_output.reshape((_batch_size, _n_glimpses, config.DIM))
 S = accumulate_glimpses_over_batch(S0, S, glimpse_positions_hd)
 S = S.dimshuffle(0, 1, "x", 2) * sample_positions_hd.dimshuffle(0, "x", 1, 2).conj
 
@@ -46,7 +47,7 @@ sampled_labels = sample_labels.dimshuffle(0, "x", 1, 2)
 # Cross entropy calculation at all sampled points
 cost = (-T.sum(sampled_labels * T.log(sampled_belief), axis=1)).mean()
 
-params = glimpse_network.params + learn_params
+params = network_params + learn_params
 
 updates = adam(cost, params)
 

@@ -11,7 +11,7 @@ import config
 assert config.TASK == "MNIST"
 
 from datagen.basic import make_batch, make_one
-from network import glimpse_network, glimpse_features
+from network import glimpse_network_output, glimpse_features, networks
 from parameters import S0, save_params
 from position_encoding import L
 from train import train
@@ -21,7 +21,7 @@ from utils.complex import ComplexTuple
 
 predict = theano.function(
         inputs=[glimpse_features],   # _ x N dimensional matrix
-        outputs=glimpse_network.output,
+        outputs=glimpse_network_output,
         allow_input_downcast=True)
 
 
@@ -99,11 +99,13 @@ if __name__ == "__main__":
             print "rendering"
             plot_belief(os.path.join(config.SAVE_DIR, "iter_{}_glimpse_{{}}_raster.png".format(iteration)))
             plot_prior(os.path.join(config.SAVE_DIR, "s0_raster.png"))
-            glimpse_network.save(os.path.join(config.SAVE_DIR, "saved_params.npy"))
+            for net in networks:
+                net.save(os.path.join(config.SAVE_DIR, "{}.npy".format(net._name)))
             save_params()
 
     plot_belief(os.path.join(config.SAVE_DIR, "iter_{}_glimpse_{{}}_raster.png").format("final"))
     plot_prior(os.path.join(config.SAVE_DIR, "s0_raster.png"))
-    glimpse_network.save(os.path.join(config.SAVE_DIR, "saved_params.npy"))
+    for net in networks:
+        net.save(os.path.join(config.SAVE_DIR, "{}.npy".format(net._name)))
     save_params()
 

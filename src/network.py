@@ -36,7 +36,8 @@ class GlimpseModel(object):
         for param, param_value in zip(self.params, params):
             param.set_value(float_x(param_value))
 
-    def __init__(self, rng, input, n_in, n_hidden, n_out):
+    def __init__(self, rng, input, n_in, n_hidden, n_out, name=None):
+        self._name = name
         self.layers = []
 
         if not isinstance(n_hidden, list):
@@ -70,18 +71,27 @@ class GlimpseModel(object):
         return all_params
 
 
-glimpse_network = GlimpseModel(
+networks = []
+for stream in config.STREAMS:
+    networks.append(GlimpseModel(
         srng,
         glimpse_features,
         n_in=config.GLIMPSE_SIZE,
         n_hidden=config.HIDDEN_LAYERS,
-        n_out=config.DIM)
+        n_out=config.DIM,
+        name="{}_stream".format(stream)))
 
-try:
-    glimpse_network.load_params(os.path.join(config.SAVE_DIR, "saved_params.npy"))
-except:
-    print "couldn't load preexisting network weights"
+for net in networks:
+    try:
+        net.load_params(os.path.join(config.SAVE_DIR, "{}.npy".format(net._name)))
+    except:
+        print "couldn't load preexisting network weights"
 
-glimpse_network_output_batch = glimpse_network.output.reshape((
-    _batch_size, _n_glimpses, config.DIM
-))
+output_sum = networks[0].output
+network_params = networks[0].params
+for net in networks[1:]:
+    output_sum = output_sum + net.output
+    network_params += net.params
+
+glimpse_network_output = output_sum
+
