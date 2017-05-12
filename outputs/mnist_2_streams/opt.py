@@ -10,7 +10,7 @@ OBJ_SIZE = 30
 LABEL_RADIUS = OBJ_SIZE
 
 STREAMS = [
-    "Object",
+    "Digits",
     # "Color",
 ]
 

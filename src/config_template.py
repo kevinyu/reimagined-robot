@@ -10,8 +10,8 @@ OBJ_SIZE = 30
 LABEL_RADIUS = OBJ_SIZE
 
 STREAMS = [
-    "Object",
-    # "Color",
+    "Digits" if TASK == "MNIST" else "Shapes",
+    "Color",
 ]
 
 COLOR_CHOICES = 2  # max 7
