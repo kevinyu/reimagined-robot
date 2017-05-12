@@ -38,7 +38,7 @@ SEED = 2
 
 MAX_K = 18.0 * np.pi
 MIN_K = 0.0
-COLOR_CHANNELS = 3 if TASK == "SHAPES" else 1
+COLOR_CHANNELS = 3 if "Color" in STREAMS else 1
 
 GLIMPSE_SIZE = COLOR_CHANNELS * 29 ** 2
 GLIMPSE_STRATEGY = "mixed"
