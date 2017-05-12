@@ -54,7 +54,7 @@ IMG_HEIGHT = IMG_SIZE[1]
 POS_SCALE = float(np.max([IMG_WIDTH, IMG_HEIGHT]))
 
 NOISE_FRAGMENTS = 10
-MAX_NOISE_SIZE = 11
+MAX_NOISE_SIZE = 8
 MIN_NOISE_SIZE = 6
 
 # how many samples when computing cost
