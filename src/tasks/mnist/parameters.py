@@ -32,8 +32,8 @@ if os.path.exists(os.path.join(config.SAVE_DIR, "D_Digits.npy")):
     )
 else:
     D_table["Digits"] = ComplexTuple(
-        init_hypervectors(10),
-        init_hypervectors(10)
+        init_hypervectors(11),
+        init_hypervectors(11)
     )
 
 for prop in properties:
@@ -48,8 +48,8 @@ for prop in properties:
         )
     else:
         D_table[stream] = ComplexTuple(
-            init_hypervectors(len(prop.params)),
-            init_hypervectors(len(prop.params))
+            init_hypervectors(len(prop.params) + 1),
+            init_hypervectors(len(prop.params) + 1)
         )
 
 
@@ -65,7 +65,6 @@ else:
         init_hypervectors(1),
         init_hypervectors(1)
     )
-
 
 learn_params = [S0.real, S0.imag]
 for stream in config.STREAMS:
