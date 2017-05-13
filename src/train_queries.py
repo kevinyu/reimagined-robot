@@ -23,10 +23,13 @@ from parameters import S0, D, learn_params
 glimpse_positions = T.ftensor3("glimpse_positions")
 glimpse_positions_hd = L.encode(glimpse_positions / config.POS_SCALE)
 # 2D sample positions (batch_size x n_samples x 2)
-sample_positions = T.ftensor3("sample_positions")
-sample_positions_hd = L.encode(sample_positions / config.POS_SCALE)
+query_vectors = T.ftensor3("query_vectors")
 # One-hot labels at each sample position (batch_size x n_samples x 11)
-sample_labels = T.ftensor3("sample_labels")
+query_labels = T.ftensor3("query_labels")
+
+# FIXME dont dupilcate this somehow?
+# One-hot labels at each sample position (batch_size x n_samples x 11)
+query_labels2 = T.ftensor3("query_labels")
 
 _batch_size, _n_glimpses, _ = glimpse_positions.shape
 
@@ -38,19 +41,33 @@ S = accumulate_glimpses_over_batch(S0, S, glimpse_positions_hd)
 # TODO we should split up here the training of the multipel sreams
 S = S.dimshuffle(0, 1, "x", 2) * query_vectors.dimshuffle(0, "x", 1, 2)
 
-similarity = S.dot(D).real
-_batch_size, _n_glimpses, _n_samples, _n_digits = similarity.shape
+# FIXME split this better?
+digit_similarity = S.dot(D_table["Digits"]).real
+_batch_size, _n_glimpses, _n_samples, _n_digits = digit_similarity.shape
 
 sampled_belief = T.nnet.softmax(
-        similarity.reshape((_batch_size * _n_glimpses * _n_samples, _n_digits))
+        digit_similarity.reshape((_batch_size * _n_glimpses * _n_samples, _n_digits))
 ).reshape((_batch_size, _n_glimpses, _n_samples, _n_digits ))
 
-sampled_labels = sample_labels.dimshuffle(0, "x", 1, 2)
+query_labels = query_labels.dimshuffle(0, "x", 1, 2)
 
 # Cross entropy calculation at all sampled points
-cost = (-T.sum(sampled_labels * T.log(sampled_belief), axis=1)).mean()
+cost = (-T.sum(query_labels * T.log(sampled_belief), axis=1)).mean()
 
-params = network_params + learn_params
+# FIXME do something else different
+color_similarity = S.dot(D_table["Color"]).real
+_batch_size, _n_glimpses, _n_samples, _n_colors = color_similarity.shape
+
+sampled_belief = T.nnet.softmax(
+        color_similarity.reshape((_batch_size * _n_glimpses * _n_samples, _n_colors))
+).reshape((_batch_size, _n_glimpses, _n_samples, _n_colors ))
+
+query_labels2 = query_labels2.dimshuffle(0, "x", 1, 2)
+cost += (-T.sum(query_labels2 * T.log(sampled_belief), axis=1)).mean()
+
+from tasks.mnist.query_scene import learn_directions
+
+params = network_params + learn_params + learn_directions
 
 updates = adam(cost, params)
 
@@ -58,8 +75,9 @@ train = theano.function(
         inputs=[
             glimpse_features,
             glimpse_positions,
-            sample_positions,
-            sample_labels
+            query_vectors,
+            query_labels,
+            query_labels2
         ],
         outputs=cost,
         updates=updates,

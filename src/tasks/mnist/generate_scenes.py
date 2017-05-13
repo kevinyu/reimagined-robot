@@ -7,6 +7,8 @@ from sklearn.datasets import fetch_mldata
 import config
 from properties import properties, rand_color
 from utils import cartesian
+from query_scene import generate_queries
+from datasets.training_set import take_glimpses, take_samples
 
 
 data_home = os.path.join(os.getenv("PROJECT_ROOT"), "media", "datasets", "mnist")
@@ -147,4 +149,31 @@ def generate_scene(img_shape):
         scene.add_digit_at(put_x, put_y, obj, mnist_labels[idx], props_info)
 
     return scene
+
+
+def make_one(glimpse_strategy=None):
+    scene = generate_scene(config.IMG_SIZE)
+    if config.NOISE_FRAGMENTS:
+        scene.add_fragment_noise(config.NOISE_FRAGMENTS, config.MAX_NOISE_SIZE)
+
+    # glimpse locs is 2 x n_glimpses
+    # FIXME: need to fix the take_glimpses code to use the new MNISTScene object...
+    # and to work with three color channels
+    glimpse_data, glimpse_locs = take_glimpses(
+            scene,
+            glimpse_width=config.GLIMPSE_WIDTH,
+            n_glimpses=config.GLIMPSES,
+            strategy=glimpse_strategy or config.GLIMPSE_STRATEGY)
+
+    queries, (_, digit_labels), (_, color_labels) = generate_queries(scene, config.BATCH_SIZE)
+
+    return scene, glimpse_data, glimpse_locs.T, queries, digit_labels, color_labels
+
+
+def make_batch(n):
+    datas = []
+    for _ in range(n):
+        datas.append(make_one())
+    return [np.array(a) for a in zip(*datas)]
+
 

@@ -21,11 +21,14 @@ directions = {
 }
 
 D_directions = {}
+learn_directions = []
 for key, val in directions.items():
     D_directions[key] = ComplexTuple(
         init_hypervectors(1),
         init_hypervectors(1)
     )
+    learn_directions.append(D_directions[key].real)
+    learn_directions.append(D_directions[key].imag)
 
 def distance(dx, dy):
     return np.sqrt(dx**2 + dy**2)
@@ -64,8 +67,10 @@ def query(scene_contents, row_idx, direction, threshold=0.2, speak=False):
             print "nothing"
         return None
 
+
 from parameters import _D_combined
 D_real, D_imag = _D_combined.real, _D_combined.imag
+
 
 def generate_queries(scene, n):
     """Takes a scene and generates n queries with distributions to match in the response
@@ -80,6 +85,9 @@ def generate_queries(scene, n):
     queries = []
     digit_result = []
     prop_results = []
+
+    digit_labels = []
+    color_labels = []
 
     for _ in range(n):
         idx = np.random.choice(range(len(scene.contents)))
@@ -105,24 +113,31 @@ def generate_queries(scene, n):
         ref_color = int(ref_color)
         # the first thing is what you bidn to S S*
         # the second is what you dot with
-        queries.append((
-            D_directions[direction].conj * ComplexTuple(D_real[ref_digit, ref_color], D_imag[ref_digit, ref_color]),
-            D_table["Digits"],
-            digit_label / np.sum(digit_label)
-        ))
 
-        queries.append((
-            D_directions[direction].conj * ComplexTuple(D_real[ref_digit, ref_color], D_imag[ref_digit, ref_color]),
-            D_table["Color"],
-            color_label / np.sum(color_label)
-        ))
+        queries.append(
+                D_directions[direction].conj *
+                ComplexTuple(
+                    D_real[ref_digit, ref_color],
+                    D_imag[ref_digit, ref_color]
+                )
+        )
+        digit_labels.append(digit_label / np.sum(digit_label))
+        color_labels.append(color_label / np.sum(color_label))
 
-    return queries
+    queries_real = T.stack([q.real for q in queries], axis=2)
+    queries_imag = T.stack([q.imag for q in queries], axis=2)
+    queries = ComplexTuple(queries_real, queries_imag)
 
+    digit_labels = np.stack(digit_labels, axis=1)
+    color_labels = np.stack(color_labels, axis=1)
 
+    return queries, (D_table["Digits"], digit_labels), (D_table["Color"], color_labels)
 
-
-
-
+# N x n_queries : matrix to multiply with scene memory
+# N x n_queries * N
+# table: N x n_choices : matrix to dot agains
+# n_queries x N dot N x n_choices
+# n_queries x n_choices
+# cross entropy with labels (n_queries x n_choices)
 
 
