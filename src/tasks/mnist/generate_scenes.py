@@ -141,9 +141,8 @@ def generate_scene(img_shape):
         center_x, center_y = put_x + dx / 2.0, put_y + dy / 2.0
 
         if scene.digit_locations:
-            # FIXME: flipping y and x here due to flippage in digit locations list ????
-            nearest_dist = np.sqrt(np.min([(center_x - x)**2 + (center_y - y)**2 for y, x in scene.digit_locations]))
-            if nearest_dist < np.max([dx, dy]):
+            nearest_dist = np.sqrt(np.min([(center_x - x)**2 + (center_y - y)**2 for x, y in scene.digit_locations]))
+            if nearest_dist < 40.0:
                 # skip becuase its too damn close to another digit
                 continue
 

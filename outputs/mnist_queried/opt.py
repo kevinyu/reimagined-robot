@@ -4,7 +4,7 @@ import numpy as np
 TASK = "MNIST"
 DIM = 1024
 
-IMG_SIZE = (120, 120)
+IMG_SIZE = (80, 80)
 
 OBJ_SIZE = 30
 LABEL_RADIUS = OBJ_SIZE
@@ -13,7 +13,7 @@ STREAMS = [
     "Digits" if TASK == "MNIST" else "Shapes",
     "Color",
 ]
-N_QUERIES = 16
+N_QUERIES = 12
 
 COLOR_CHOICES = 2  # max 7
 SCALE_CHOICES = 0
