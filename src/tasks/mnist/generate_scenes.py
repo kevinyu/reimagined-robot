@@ -59,8 +59,9 @@ class MNISTScene(object):
             Tuple pairs for each property and index of paramter value
             e.g. [("Color", 0), ... ]
         """
+        dx, dy = obj.shape[:2]
         self.add_thing_at(x, y, obj)
-        self.contents.append((digit_id, x, y, digit_properties))
+        self.contents.append((digit_id, x + dx /2, y + dy/2, digit_properties))
 
     def add_fragment_noise(self, n, max_fragment_size):
         choices = cartesian(self.x_max - max_fragment_size, self.y_max - max_fragment_size)

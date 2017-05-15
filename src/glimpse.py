@@ -129,9 +129,16 @@ def take_glimpses(scene, glimpse_width, n_glimpses=1, strategy="smart"):
 
     sample_locations = [choices[np.random.choice(len(choices))] for _ in range(n_glimpses)]
 
-    for i, (x, y) in enumerate(sample_locations):
+    locs = []
+    for i, (x, y) in enumerate(scene.digit_locations[:n_glimpses]):
+        locs.append([x, y])
         glimpses[i] = glimpse(scene.img, x, y, glimpse_width).reshape(config.GLIMPSE_SIZE)
 
-    return glimpses, np.array(sample_locations).T
+
+    for i, (x, y) in enumerate(sample_locations[len(scene.digit_locations):]):
+        locs.append([x, y])
+        glimpses[i] = glimpse(scene.img, x, y, glimpse_width).reshape(config.GLIMPSE_SIZE)
+
+    return glimpses, np.array(locs).T
 
 

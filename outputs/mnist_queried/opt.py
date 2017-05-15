@@ -4,7 +4,7 @@ import numpy as np
 TASK = "MNIST"
 DIM = 1024
 
-IMG_SIZE = (80, 80)
+IMG_SIZE = (120, 120)
 
 OBJ_SIZE = 30
 LABEL_RADIUS = OBJ_SIZE
