@@ -1,7 +1,10 @@
+import os
+
 import numpy as np
 import theano
 import theano.tensor as T
 
+import config
 from properties import Color
 from parameters import D_table
 from utils import float_x, init_hypervectors
@@ -20,15 +23,42 @@ directions = {
     "below-left": -1.0 * u,
 }
 
-D_directions = {}
-learn_directions = []
-for key, val in directions.items():
-    D_directions[key] = ComplexTuple(
-        init_hypervectors(1),
-        init_hypervectors(1)
+if os.path.exists(os.path.join(config.SAVE_DIR, "D_directions.npy")):
+    d_array = np.load(os.path.join(config.SAVE_DIR, "D_directions.npy"))
+    D_directions = ComplexTuple(
+        theano.shared(float_x(d_array[0])),
+        theano.shared(float_x(d_array[1]))
     )
-    learn_directions.append(D_directions[key].real)
-    learn_directions.append(D_directions[key].imag)
+else:
+    D_directions = ComplexTuple(
+        init_hypervectors(len(directions)),
+        init_hypervectors(len(directions))
+    )
+
+def save_directions():
+    d_filename = os.path.join(config.SAVE_DIR, "D_directions")
+    np.save(d_filename, np.array(list(D_directions.get_value())))
+
+
+_direction_keys = {
+    "below": 0,
+    "below-right": 1,
+    "right": 2,
+    "above-right": 3,
+    "above": 4,
+    "above-left": 5,
+    "left": 6,
+    "below-left": 7,
+}
+def direction_vector(key):
+    idx = _direction_keys[key]
+    return ComplexTuple(
+        D_directions.real[:, idx],
+        D_directions.imag[:, idx]
+    )
+
+learn_directions = [D_directions.real, D_directions.imag]
+
 
 def distance(dx, dy):
     return np.sqrt(dx**2 + dy**2)
@@ -82,9 +112,9 @@ def generate_queries(scene, n):
     digit_result (np.ndarray, n): softmax over digits
     prop_results (np.ndarray, n x n_properties): softmax over each property
     """
-    queries = []
-    digit_result = []
-    prop_results = []
+    query_directions = []
+    query_digits = []
+    query_colors = []
 
     digit_labels = []
     color_labels = []
@@ -98,6 +128,11 @@ def generate_queries(scene, n):
         color_label = np.zeros(5)
 
         if result is not None:
+            # i = np.argmax(result)
+            # digit_id, _, _, props = scene.contents[i]
+            # digit_label[int(digit_id)] = 1
+            # color_label[props[0][1]] = 1
+
             for i, weight in enumerate(result[result > 0]):
                 digit_id, _, _, props = scene.contents[i]
                 digit_label[int(digit_id)] += weight
@@ -114,24 +149,20 @@ def generate_queries(scene, n):
         # the first thing is what you bidn to S S*
         # the second is what you dot with
 
-        queries.append(
-                D_directions[direction].conj *
-                ComplexTuple(
-                    D_real[ref_digit, ref_color],
-                    D_imag[ref_digit, ref_color]
-                )
-        )
+        query_directions.append(_direction_keys[direction])
+        query_digits.append(ref_digit)
+        query_colors.append(ref_color)
+
         digit_labels.append(digit_label / np.sum(digit_label))
         color_labels.append(color_label / np.sum(color_label))
 
-    queries_real = T.stack([q.real for q in queries], axis=2)
-    queries_imag = T.stack([q.imag for q in queries], axis=2)
-    queries = ComplexTuple(queries_real, queries_imag)
+    digit_labels = np.stack(digit_labels, axis=1).T
+    color_labels = np.stack(color_labels, axis=1).T
+    
+    # FIXME queries includes a learnable param... so needs to
+    # be computed in the graph, cant be passed in...
 
-    digit_labels = np.stack(digit_labels, axis=1)
-    color_labels = np.stack(color_labels, axis=1)
-
-    return queries, (D_table["Digits"], digit_labels), (D_table["Color"], color_labels)
+    return query_directions, query_digits, query_colors, digit_labels, color_labels
 
 # N x n_queries : matrix to multiply with scene memory
 # N x n_queries * N

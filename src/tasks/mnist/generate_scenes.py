@@ -8,7 +8,7 @@ import config
 from properties import properties, rand_color
 from utils import cartesian
 from query_scene import generate_queries
-from datasets.training_set import take_glimpses, take_samples
+from glimpse import take_glimpses
 
 
 data_home = os.path.join(os.getenv("PROJECT_ROOT"), "media", "datasets", "mnist")
@@ -77,21 +77,21 @@ class MNISTScene(object):
 
     def near_digits(self, within=None):
         """Return a grid the same shape as image with 1's indicating they are near a digit"""
-        result = np.zeros_like(self.img)
+        result = np.zeros(self.img.shape[:2])
         if within is None:
             within = self.label_radius
         y, x = np.meshgrid(np.arange(self.x_max), np.arange(self.y_max))
         if not self.digit_locations:
-            result = np.ones_like(self.img)
+            result = np.ones(self.img.shape[:2])
         for digit_x, digit_y in self.digit_locations:
-            d_half = self.DIGIT_SIZE / 2.0
+            d_half = 28.0 / 2.0
             center_x, center_y = (digit_x + d_half, digit_y + d_half)
             condition = (np.power(x - center_x, 2) + np.power(y - center_y, 2)) <= np.power(within, 2)
             result[np.where(condition)] = 1
         return result
 
     def padded(self, padding=None):
-        result = np.zeros_like(self.img)
+        result = np.zeros(self.img.shape[:2])
         if padding is None:
             padding = self.DIGIT_SIZE / 2
 
@@ -141,7 +141,8 @@ def generate_scene(img_shape):
         center_x, center_y = put_x + dx / 2.0, put_y + dy / 2.0
 
         if scene.digit_locations:
-            nearest_dist = np.sqrt(np.min([(center_x - x)**2 + (center_y - y)**2 for x, y in scene.digit_locations]))
+            # FIXME: flipping y and x here due to flippage in digit locations list ????
+            nearest_dist = np.sqrt(np.min([(center_x - x)**2 + (center_y - y)**2 for y, x in scene.digit_locations]))
             if nearest_dist < np.max([dx, dy]):
                 # skip becuase its too damn close to another digit
                 continue
@@ -153,6 +154,7 @@ def generate_scene(img_shape):
 
 def make_one(glimpse_strategy=None):
     scene = generate_scene(config.IMG_SIZE)
+
     if config.NOISE_FRAGMENTS:
         scene.add_fragment_noise(config.NOISE_FRAGMENTS, config.MAX_NOISE_SIZE)
 
@@ -165,9 +167,10 @@ def make_one(glimpse_strategy=None):
             n_glimpses=config.GLIMPSES,
             strategy=glimpse_strategy or config.GLIMPSE_STRATEGY)
 
-    queries, (_, digit_labels), (_, color_labels) = generate_queries(scene, config.BATCH_SIZE)
+    query_directions, query_digits, query_colors, digit_labels, color_labels = generate_queries(
+            scene, config.N_QUERIES)
 
-    return scene, glimpse_data, glimpse_locs.T, queries, digit_labels, color_labels
+    return scene, glimpse_data, glimpse_locs.T, query_directions, query_digits, query_colors, digit_labels, color_labels
 
 
 def make_batch(n):

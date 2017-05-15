@@ -69,7 +69,7 @@ else:
 learn_params = [S0.real, S0.imag]
 for stream in config.STREAMS:
     learn_params += [D_table[stream].real, D_table[stream].imag]
-learn_params += [nothing_vector.real, nothing_vector.imag]
+# learn_params += [nothing_vector.real, nothing_vector.imag]
 
 
 # TODO delete this block when we no longer need this

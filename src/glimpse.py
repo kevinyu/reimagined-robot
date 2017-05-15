@@ -1,6 +1,9 @@
+import numpy as np
 import theano
 import theano.tensor as T
 
+import config
+from utils import cartesian
 from utils.complex import ComplexTuple
 
 
@@ -90,4 +93,45 @@ def glimpse(img, x, y, width):
             width, x, y, img.shape))
 
     return img[x_min:x_max, y_min:y_max]
+
+
+def take_glimpses(scene, glimpse_width, n_glimpses=1, strategy="smart"):
+    """Build an array of glimpses from a scene
+
+    Params:
+    scene (mnist_scene.MNISTScene)
+    glimpse_width (int, default=28 + 1)
+        Width of glimpse window to use
+    n_glimpses (int, default=1)
+        Number of glimpses to take
+    strategy (str, "smart" or "uniform")
+        Take glimpses near digits, or just uniformly throughout image
+
+    Returns:
+    glimpses (np.array, n_glimpses x glimpse_width**2)
+    glimpse_locations (np.array, n_glimpses x 2)
+    """
+    glimpses = np.zeros((n_glimpses, config.GLIMPSE_SIZE))
+
+    # FIXME: technically this should vary based on glimpse_size (valid___max is fn of digit size)
+    half_glimpse = glimpse_width / 2
+    choices = cartesian(
+        (half_glimpse, scene.img.shape[0] - half_glimpse - 1),
+        (half_glimpse, scene.img.shape[1] - half_glimpse - 1)
+    )
+
+    # FIXME how to make it so we alwyas sample near digits
+    '''
+    near_digits = scene.near_digits(14)
+    choices = [(x, y) for x, y in choices if
+            near_digits[x + half_glimpse, y+half_glimpse] > 0]
+    '''
+
+    sample_locations = [choices[np.random.choice(len(choices))] for _ in range(n_glimpses)]
+
+    for i, (x, y) in enumerate(sample_locations):
+        glimpses[i] = glimpse(scene.img, x, y, glimpse_width).reshape(config.GLIMPSE_SIZE)
+
+    return glimpses, np.array(sample_locations).T
+
 

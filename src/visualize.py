@@ -7,7 +7,7 @@ import theano
 import theano.tensor as T
 
 import config
-from parameters import D
+from tasks.mnist.parameters import D_table
 from position_encoding import L
 from utils import float_x
 from utils.complex import ComplexTuple
@@ -23,7 +23,7 @@ X = L.encode_numeric(float_x(np.array(
 X = ComplexTuple(theano.shared(X.real), theano.shared(X.imag))
 
 S = ComplexTuple(*T.fvectors("scene_real", "scene_imag"))
-similarity = (X.conj * S.dimshuffle("x", "x", 0)).dot(D).real
+similarity = (X.conj * S.dimshuffle("x", "x", 0)).dot(D_table["Digits"]).real
 _n_glimpses, _n_samples, _n_digits = similarity.shape
 
 belief = T.nnet.softmax(

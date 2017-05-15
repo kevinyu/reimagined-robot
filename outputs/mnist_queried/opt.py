@@ -4,7 +4,7 @@ import numpy as np
 TASK = "MNIST"
 DIM = 1024
 
-IMG_SIZE = (100, 100)
+IMG_SIZE = (120, 120)
 
 OBJ_SIZE = 30
 LABEL_RADIUS = OBJ_SIZE
@@ -13,13 +13,14 @@ STREAMS = [
     "Digits" if TASK == "MNIST" else "Shapes",
     "Color",
 ]
+N_QUERIES = 16
 
 COLOR_CHOICES = 2  # max 7
 SCALE_CHOICES = 0
 ROTATION_CHOICES = 0
 
 GLIMPSE_WIDTH = 29
-GLIMPSES = 3
+GLIMPSES = 6
 
 SAMPLES = 300  # training samples per scene
 SAMPLE_RADIUS = 13.0
@@ -27,8 +28,8 @@ SAMPLE_RADIUS = 13.0
 HIDDEN_LAYERS = [1024, 1024]
 
 TRAINING_ITERATIONS = 6000
-BATCH_SIZE = 30
-SAVE_EVERY = 100
+BATCH_SIZE = 50
+SAVE_EVERY = 20
 
 SAVE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "outputs")
 
@@ -53,7 +54,7 @@ IMG_WIDTH = IMG_SIZE[0]
 IMG_HEIGHT = IMG_SIZE[1]
 POS_SCALE = float(np.max([IMG_WIDTH, IMG_HEIGHT]))
 
-NOISE_FRAGMENTS = 10
+NOISE_FRAGMENTS = 0 # 10
 MAX_NOISE_SIZE = 8
 MIN_NOISE_SIZE = 6
 
