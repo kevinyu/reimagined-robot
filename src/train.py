@@ -30,9 +30,15 @@ sample_labels = T.ftensor3("sample_labels")
 
 _batch_size, _n_glimpses, _ = glimpse_positions.shape
 
+
+
+
 # Convert to batch_size x n_glimpses x n_samples x DIM tensor
 S = glimpse_network_output.reshape((_batch_size, _n_glimpses, config.DIM))
 S = accumulate_glimpses_over_batch(S0, S, glimpse_positions_hd)
+S = S.get_columns([-3, -2, -1])
+
+
 S = S.dimshuffle(0, 1, "x", 2) * sample_positions_hd.dimshuffle(0, "x", 1, 2).conj
 
 similarity = S.dot(D).real

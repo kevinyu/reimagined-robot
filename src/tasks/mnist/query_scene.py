@@ -69,7 +69,7 @@ def angle(dx, dy):
 
 
 def f(d, theta):
-    return np.maximum(0.0, (np.abs(np.cos(theta)) > .6) * (50.0 / d) * np.cos(theta))
+    return np.maximum(0.0, (np.abs(np.cos(theta)) > .6) * (100.0 / d) * np.cos(theta))
 
 
 def query(scene_contents, row_idx, direction, threshold=0.2, speak=False):
@@ -133,7 +133,9 @@ def generate_queries(scene, n):
             # digit_label[int(digit_id)] = 1
             # color_label[props[0][1]] = 1
 
-            for i, weight in enumerate(result[result > 0]):
+            for i, weight in enumerate(result):
+                if weight <= 0.0:
+                    continue
                 digit_id, _, _, props = scene.contents[i]
                 digit_label[int(digit_id)] += weight
                 color_label[props[0][1]] += weight

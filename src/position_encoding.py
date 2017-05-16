@@ -10,7 +10,6 @@ from utils.unitary import U, get_U
 
 rs = np.random.RandomState(seed=config.SEED)
 
-'''
 K = theano.shared(float_x(
     rs.choice([-1, 1], size=(config.DIM, 2)) *
     rs.uniform(config.MIN_K, config.MAX_K, size=(config.DIM, 2))
@@ -29,6 +28,7 @@ ft0=(np.fft.fft2(temp_dim0)).flatten()
 ft1=(np.fft.fft2(temp_dim1)).flatten()
 
 K=theano.shared(float_x(np.array([np.angle(ft0), np.angle(ft1)]).T))
+'''
 
 
 class PositionEncoder(object):
@@ -36,12 +36,12 @@ class PositionEncoder(object):
         self.K = K
 
     def encode(self, X):
-        X = T.dot(X, U)
+        # X = T.dot(X, U)
         phi = T.dot(X, self.K.T)
         return ComplexTuple(T.cos(phi), T.sin(phi))
 
     def encode_numeric(self, X):
-        X = np.dot(X, get_U())
+        # X = np.dot(X, get_U())
         phi = np.dot(X, self.K.get_value().T)
         return ComplexTuple(np.cos(phi), np.sin(phi))
 

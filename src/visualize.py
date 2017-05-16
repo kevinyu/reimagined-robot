@@ -16,8 +16,8 @@ from utils.complex import ComplexTuple
 # IMG_WIDTH x IMG_HEIGHT * DIM
 X = L.encode_numeric(float_x(np.array(
     np.meshgrid(
-        np.linspace(-1, 1, config.IMG_WIDTH),
-        np.linspace(-1, 1, config.IMG_HEIGHT)
+        np.linspace(0, 1, config.IMG_WIDTH),
+        np.linspace(0, 1, config.IMG_HEIGHT)
     )
 ).swapaxes(0, 2)))
 X = ComplexTuple(theano.shared(X.real), theano.shared(X.imag))
