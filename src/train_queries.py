@@ -23,7 +23,7 @@ from utils.unitary import theta
 
 # 2D glimpse positions (batch_size x n_glimpses x 2)
 glimpse_positions = T.ftensor3("glimpse_positions")
-glimpse_positions_hd = L.encode(2 * (glimpse_positions / config.POS_SCALE) - 1)
+glimpse_positions_hd = L.encode(config.POS_SCALE(glimpse_positions)k
 
 
 # 2D sample positions (batch_size x n_samples x 2)
