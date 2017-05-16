@@ -23,7 +23,7 @@ from visualize import X, miniX, Xinv, mini_scale
 
 # 2D glimpse positions (batch_size x n_glimpses x 2)
 glimpse_positions = T.ftensor3("glimpse_positions")
-glimpse_positions_hd = L.encode(glimpse_positions / config.POS_SCALE)
+glimpse_positions_hd = L.encode(config.POS_SCALE(glimpse_positions)
 
 
 

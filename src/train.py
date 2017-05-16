@@ -21,10 +21,10 @@ from parameters import S0, D, learn_params
 
 # 2D glimpse positions (batch_size x n_glimpses x 2)
 glimpse_positions = T.ftensor3("glimpse_positions")
-glimpse_positions_hd = L.encode(glimpse_positions / config.POS_SCALE)
+glimpse_positions_hd = L.encode(config.POS_SCALE(glimpse_positions))
 # 2D sample positions (batch_size x n_samples x 2)
 sample_positions = T.ftensor3("sample_positions")
-sample_positions_hd = L.encode(sample_positions / config.POS_SCALE)
+sample_positions_hd = L.encode(config.POS_SCALE(sample_positions))
 # One-hot labels at each sample position (batch_size x n_samples x 11)
 sample_labels = T.ftensor3("sample_labels")
 

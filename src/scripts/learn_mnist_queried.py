@@ -44,7 +44,7 @@ def plot_belief_colors(filename_base):
     nnnn = config.GLIMPSES - 3
     for i in range(config.GLIMPSES - 3):
         g = ComplexTuple(*predict(glimpses[i][None]))
-        S = (S + g * L.encode_numeric(glimpse_xy[i] / config.POS_SCALE)).reshape((1024,))
+        S = (S + g * L.encode_numeric(config.POS_SCALE(glimpse_xy[i]))).reshape((1024,))
 
     if config.TRAIN_TYPE == "query-based":
         print filename_base.format(i)
@@ -59,10 +59,9 @@ def plot_belief_colors(filename_base):
             else:
                 print "I think its {}".format(Color.params[guess])
 
-
     for i in range(3):
         g = ComplexTuple(*predict(glimpses[nnnn + i][None]))
-        S = (S + g * L.encode_numeric(glimpse_xy[nnnn + i] / config.POS_SCALE)).reshape((1024,))
+        S = (S + g * L.encode_numeric(config.POS_SCALE(glimpse_xy[nnnn + i]))).reshape((1024,))
 
         D_color = D_table["Color"].get_value()
         belief = raster(D_color.real, D_color.imag, S.real, S.imag)
@@ -114,7 +113,7 @@ def plot_belief(filename_base):
     nnnn = config.GLIMPSES - 3
     for i in range(config.GLIMPSES - 3):
         g = ComplexTuple(*predict(glimpses[i][None]))
-        S = (S + g * L.encode_numeric(glimpse_xy[i] / config.POS_SCALE)).reshape((1024,))
+        S = (S + g * L.encode_numeric(config.POS_SCALE(glimpse_xy[i]))).reshape((1024,))
 
     if config.TRAIN_TYPE == "query-based":
         print filename_base.format(i)
@@ -129,10 +128,9 @@ def plot_belief(filename_base):
             else:
                 print "I think a {}".format(guess)
 
-
     for i in range(3):
         g = ComplexTuple(*predict(glimpses[nnnn + i][None]))
-        S = (S + g * L.encode_numeric(glimpse_xy[nnnn + i] / config.POS_SCALE)).reshape((1024,))
+        S = (S + g * L.encode_numeric(config.POS_SCALE(glimpse_xy[nnnn + i]))).reshape((1024,))
 
         D_digits = D_table["Digits"].get_value()
         belief = raster(D_digits.real, D_digits.imag, S.real, S.imag)
