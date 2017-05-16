@@ -46,17 +46,18 @@ def plot_belief_colors(filename_base):
         g = ComplexTuple(*predict(glimpses[i][None]))
         S = (S + g * L.encode_numeric(glimpse_xy[i] / config.POS_SCALE)).reshape((1024,))
 
-    print filename_base.format(i)
-    n_responses = 6
-    responses = query_belief_fns[1](glimpses.reshape(6, config.GLIMPSE_SIZE) / 255.0, [glimpse_xy], [query_directions], [query_digits], [query_colors])[0][1]
-    for q_d, q_dig, q_col, resp  in zip(query_directions, query_digits, query_colors, responses)[:n_responses]:
-        print "What color is relatively {} to a {} {}?".format(
-                dir_lookup[q_d], Color.params[int(q_col)], int(q_dig))
-        guess = int(np.argmax(resp))
-        if guess == 4:
-            print "I think nothing"
-        else:
-            print "I think its {}".format(Color.params[guess])
+    if config.TRAIN_TYPE == "query-based":
+        print filename_base.format(i)
+        n_responses = 6
+        responses = query_belief_fns[1](glimpses.reshape(6, config.GLIMPSE_SIZE) / 255.0, [glimpse_xy], [query_directions], [query_digits], [query_colors])[0][1]
+        for q_d, q_dig, q_col, resp  in zip(query_directions, query_digits, query_colors, responses)[:n_responses]:
+            print "What color is relatively {} to a {} {}?".format(
+                    dir_lookup[q_d], Color.params[int(q_col)], int(q_dig))
+            guess = int(np.argmax(resp))
+            if guess == 4:
+                print "I think nothing"
+            else:
+                print "I think its {}".format(Color.params[guess])
 
 
     for i in range(3):
@@ -115,17 +116,18 @@ def plot_belief(filename_base):
         g = ComplexTuple(*predict(glimpses[i][None]))
         S = (S + g * L.encode_numeric(glimpse_xy[i] / config.POS_SCALE)).reshape((1024,))
 
-    print filename_base.format(i)
-    n_responses = 6
-    responses = query_belief_fns[0](glimpses.reshape(6, config.GLIMPSE_SIZE) / 255.0, [glimpse_xy], [query_directions], [query_digits], [query_colors])[0][1]
-    for q_d, q_dig, q_col, resp  in zip(query_directions, query_digits, query_colors, responses)[:n_responses]:
-        print "What digit is relatively {} to a {} {}?".format(
-                dir_lookup[q_d], Color.params[int(q_col)], int(q_dig))
-        guess = int(np.argmax(resp))
-        if guess == 10:
-            print "I think nothing"
-        else:
-            print "I think a {}".format(guess)
+    if config.TRAIN_TYPE == "query-based":
+        print filename_base.format(i)
+        n_responses = 6
+        responses = query_belief_fns[0](glimpses.reshape(6, config.GLIMPSE_SIZE) / 255.0, [glimpse_xy], [query_directions], [query_digits], [query_colors])[0][1]
+        for q_d, q_dig, q_col, resp  in zip(query_directions, query_digits, query_colors, responses)[:n_responses]:
+            print "What digit is relatively {} to a {} {}?".format(
+                    dir_lookup[q_d], Color.params[int(q_col)], int(q_dig))
+            guess = int(np.argmax(resp))
+            if guess == 10:
+                print "I think nothing"
+            else:
+                print "I think a {}".format(guess)
 
 
     for i in range(3):
@@ -220,6 +222,8 @@ if __name__ == "__main__":
             cost = train(glimpses, glimpse_xy, sample_xy, digit_labels, color_labels)
 
         print cost
+        if iteration % 5 == 0:
+            plot_directions(os.path.join(config.SAVE_DIR, "directions_raster.png"))
 
 
         if iteration % config.SAVE_EVERY == 0:
@@ -227,7 +231,6 @@ if __name__ == "__main__":
             plot_belief(os.path.join(config.SAVE_DIR, "iter_{}_glimpse_{{}}_raster.png".format(iteration)))
             plot_belief_colors(os.path.join(config.SAVE_DIR, "iter_{}_glimpse_{{}}_raster_colors.png".format(iteration)))
             plot_prior(os.path.join(config.SAVE_DIR, "s0_raster.png"))
-            plot_directions(os.path.join(config.SAVE_DIR, "directions_raster.png"))
             # plot_directions(os.path.join(config.SAVE_DIR, "directions_raster.png"))
             for net in networks:
                 net.save(os.path.join(config.SAVE_DIR, "{}.npy".format(net._name)))

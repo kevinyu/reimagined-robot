@@ -17,6 +17,7 @@ from tasks.mnist.parameters import S0, learn_params, D_table
 from tasks.mnist.query_scene import D_directions, learn_directions
 from utils.complex import ComplexTuple
 from utils.unitary import theta
+from visualize import X, miniX, Xinv, mini_scale
 
 
 
@@ -55,9 +56,30 @@ if config.TRAIN_TYPE == "query-based":
     _direction_vectors = D_directions.get_columns(query_directions).dimshuffle(1, 2, 0)
     _digit_vectors = D_table["Digits"].get_columns(query_digits).dimshuffle(1, 2, 0)
     _color_vectors = D_table["Color"].get_columns(query_colors).dimshuffle(1, 2, 0)
-    query_vectors = (_direction_vectors.conj * (_digit_vectors + _color_vectors))
+    # this is where i first unbind digit+color. sharpen up in
+    # spatial domain and pass thru sigmoid.
+    # then go back to HD domain and bind
+    _unbound_loc = S * (_digit_vectors + _color_vectors).conj.dimshuffle(0, "x", 1, 2)
 
-    queried = S.conj * S * query_vectors.dimshuffle(0, "x", 1, 2)
+    # (X Y N) dot (batch glimpses queries N)
+    # (X Y N) dot (N batch glimpses queries)
+    _unbound_map = miniX.dot(_unbound_loc.dimshuffle(0, 1, 3, 2)).real
+    _unbound_belief = T.nnet.sigmoid(_unbound_map)
+    # (X Y batch glimpses queries)
+
+    a, b, c, d, e = _unbound_belief.shape
+    _unbound_belief = ComplexTuple(_unbound_belief, T.zeros_like(_unbound_belief))
+
+    _unbound_loc = Xinv.conj.reshape(
+            (config.DIM, (config.IMG_WIDTH / mini_scale) * (config.IMG_HEIGHT / mini_scale))
+    ).dot(
+            _unbound_belief.reshape((a*b, c, d, e)).dimshuffle(1, 2, 0, 3)
+    ).dimshuffle(1, 2, 3, 0)
+
+    query_loc = _direction_vectors.dimshuffle(0, "x", 1, 2) * _unbound_loc
+    # query_vectors = (_direction_vectors.conj * (_digit_vectors + _color_vectors))
+
+    queried = S * query_loc.conj
 else:
     # 2D sample positions (batch_size x n_samples x 2)
     sample_positions = T.ftensor3("sample_positions")
@@ -77,11 +99,12 @@ for stream, q_labels in zip(config.STREAMS, query_labels):
             similarity.reshape((_batch_size * _n_glimpses * _n_samples, _n_choices))
     ).reshape((_batch_size, _n_glimpses, _n_samples, _n_choices ))
 
-    query_belief_fns.append(theano.function(
-	[glimpse_features, glimpse_positions, query_directions, query_digits, query_colors],
-	sampled_belief,
-	allow_input_downcast=True
-    ))
+    if config.TRAIN_TYPE == "query-based":
+        query_belief_fns.append(theano.function(
+            [glimpse_features, glimpse_positions, query_directions, query_digits, query_colors],
+            sampled_belief,
+            allow_input_downcast=True
+        ))
 
     queried_labels = q_labels.dimshuffle(0, "x", 1, 2)
 

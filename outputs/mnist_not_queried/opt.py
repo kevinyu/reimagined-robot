@@ -7,13 +7,13 @@ DIM = 1024
 IMG_SIZE = (120, 120)
 
 OBJ_SIZE = 30
-LABEL_RADIUS = 10.0
+LABEL_RADIUS = 13.0
 
 STREAMS = [
     "Digits" if TASK == "MNIST" else "Shapes",
     "Color",
 ]
-N_QUERIES = 12
+N_QUERIES = 14
 TRAIN_TYPE = "query-based"
 
 COLOR_CHOICES = 2  # max 7
@@ -23,10 +23,10 @@ ROTATION_CHOICES = 0
 GLIMPSE_WIDTH = 29
 GLIMPSES = 6
 
-SAMPLES = 300  # training samples per scene
-SAMPLE_RADIUS = 13.0
+SAMPLES = 400  # training samples per scene
+SAMPLE_RADIUS = 12.0
 
-HIDDEN_LAYERS = [1024, 1024]
+HIDDEN_LAYERS = [4096, 2048]
 
 TRAINING_ITERATIONS = 6000
 BATCH_SIZE = 40
@@ -38,7 +38,7 @@ SAVE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "outputs")
 
 SEED = 2
 
-MAX_K = 18.0 * np.pi
+MAX_K = 6.0 * np.pi
 MIN_K = 0.0
 COLOR_CHANNELS = 3 if "Color" in STREAMS else 1
 

@@ -167,7 +167,7 @@ def generate_scene(img_shape):
 
         if scene.digit_locations:
             nearest_dist = np.sqrt(np.min([(center_x - x)**2 + (center_y - y)**2 for x, y in scene.digit_locations]))
-            if nearest_dist < 40.0:
+            if nearest_dist < 30.0:
                 # skip becuase its too damn close to another digit
                 continue
 
@@ -229,20 +229,20 @@ def take_samples(scene, n_samples=1, strategy="smart", within=None):
     sample_locations (np.array, n_samples x 2)
     """
     # FIXME: hardcoding one hot lengths and numbers
-    one_hot = np.zeros((n_samples, 11))
-    one_hot_colors = np.zeros((n_samples, 5))
+    one_hot = np.zeros((n_samples + 30, 11))
+    one_hot_colors = np.zeros((n_samples + 30, 5))
 
     if strategy == "smart":
-        sample_locations = scene.sample_near_digits(n=n_samples, within=within)
+        sample_locations = scene.sample_near_digits(n=n_samples + 30, within=within)
     elif strategy == "uniform":
         choices = cartesian(scene.img.shape[0], scene.img.shape[1])
-        sample_locations = [choices[np.random.choice(len(choices))] for _ in range(n_samples)]
+        sample_locations = [choices[np.random.choice(len(choices))] for _ in range(n_samples + 30)]
     elif strategy == "mixed":
         choices = cartesian(scene.img.shape[0], scene.img.shape[1])
         odd = n_samples % 2
         sample_locations = (
-                scene.sample_near_digits(n=n_samples/2 + (1 if odd else 0), within=within) +
-                [choices[np.random.choice(len(choices))] for _ in range(n_samples/2)]
+                scene.sample_near_digits(n=n_samples, within=within) +
+                [choices[np.random.choice(len(choices))] for _ in range(30)]
         )
 
     for i, (x, y) in enumerate(sample_locations):

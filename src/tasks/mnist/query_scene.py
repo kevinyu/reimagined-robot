@@ -31,8 +31,8 @@ if os.path.exists(os.path.join(config.SAVE_DIR, "D_directions.npy")):
     )
 else:
     D_directions = ComplexTuple(
-        init_hypervectors(len(directions)),
-        init_hypervectors(len(directions))
+        init_hypervectors(len(directions), zeros=True),
+        init_hypervectors(len(directions), zeros=True)
     )
 
 def save_directions():
