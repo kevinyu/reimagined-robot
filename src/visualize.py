@@ -11,6 +11,7 @@ from tasks.mnist.parameters import D_table
 from position_encoding import L
 from utils import float_x
 from utils.complex import ComplexTuple
+from tasks.mnist.query_scene import D_directions
 
 
 # IMG_WIDTH x IMG_HEIGHT * DIM
@@ -34,6 +35,17 @@ belief = T.nnet.softmax(
 raster = theano.function(
         inputs=[D.real, D.imag, S.real, S.imag],
         outputs=belief,
+        allow_input_downcast=True)
+
+dir_sim = X.dot(D_directions).real
+a, b, c = dir_sim.shape
+dir_belief = T.nnet.softmax(
+        dir_sim.reshape((a * b, c))
+).reshape((a, b, c))
+
+direction_raster = theano.function(
+        inputs=[],
+        outputs=dir_belief,
         allow_input_downcast=True)
 
 

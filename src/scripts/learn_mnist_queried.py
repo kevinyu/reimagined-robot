@@ -17,7 +17,7 @@ from network import glimpse_network_output, glimpse_features, networks
 from parameters import S0, save_params
 from position_encoding import L
 from train_queries import train, query_belief_fns
-from visualize import raster
+from visualize import raster, direction_raster
 from utils.complex import ComplexTuple
 from position_encoding import get_U
 from properties import Color
@@ -27,6 +27,8 @@ predict = theano.function(
         inputs=[glimpse_features],   # _ x N dimensional matrix
         outputs=glimpse_network_output,
         allow_input_downcast=True)
+
+dir_lookup = dict((v, k) for k, v in _direction_keys.items())
 
 
 def plot_belief_colors(filename_base):
@@ -43,6 +45,19 @@ def plot_belief_colors(filename_base):
     for i in range(config.GLIMPSES - 3):
         g = ComplexTuple(*predict(glimpses[i][None]))
         S = (S + g * L.encode_numeric(glimpse_xy[i] / config.POS_SCALE)).reshape((1024,))
+
+    print filename_base.format(i)
+    n_responses = 6
+    responses = query_belief_fns[1](glimpses.reshape(6, config.GLIMPSE_SIZE) / 255.0, [glimpse_xy], [query_directions], [query_digits], [query_colors])[0][1]
+    for q_d, q_dig, q_col, resp  in zip(query_directions, query_digits, query_colors, responses)[:n_responses]:
+        print "What color is relatively {} to a {} {}?".format(
+                dir_lookup[q_d], Color.params[int(q_col)], int(q_dig))
+        guess = int(np.argmax(resp))
+        if guess == 4:
+            print "I think nothing"
+        else:
+            print "I think its {}".format(Color.params[guess])
+
 
     for i in range(3):
         g = ComplexTuple(*predict(glimpses[nnnn + i][None]))
@@ -76,9 +91,6 @@ def plot_belief_colors(filename_base):
             plt.scatter(x, y)
             plt.text(x+5, y+5, color_name, color="white")
 
-	print filename_base.format(i)
-        print query_belief_fns[1](glimpses.reshape(6, config.GLIMPSE_SIZE) / 255.0, [glimpse_xy], [query_directions], [query_digits], [query_colors])
-
         plt.subplot(6, 3, 3)
         entropy = - np.sum(belief * np.log2(belief), axis=2)
         plt.imshow(entropy, vmin=0.0, vmax=np.log2(11.0))
@@ -103,6 +115,19 @@ def plot_belief(filename_base):
         g = ComplexTuple(*predict(glimpses[i][None]))
         S = (S + g * L.encode_numeric(glimpse_xy[i] / config.POS_SCALE)).reshape((1024,))
 
+    print filename_base.format(i)
+    n_responses = 6
+    responses = query_belief_fns[0](glimpses.reshape(6, config.GLIMPSE_SIZE) / 255.0, [glimpse_xy], [query_directions], [query_digits], [query_colors])[0][1]
+    for q_d, q_dig, q_col, resp  in zip(query_directions, query_digits, query_colors, responses)[:n_responses]:
+        print "What digit is relatively {} to a {} {}?".format(
+                dir_lookup[q_d], Color.params[int(q_col)], int(q_dig))
+        guess = int(np.argmax(resp))
+        if guess == 10:
+            print "I think nothing"
+        else:
+            print "I think a {}".format(guess)
+
+
     for i in range(3):
         g = ComplexTuple(*predict(glimpses[nnnn + i][None]))
         S = (S + g * L.encode_numeric(glimpse_xy[nnnn + i] / config.POS_SCALE)).reshape((1024,))
@@ -124,9 +149,6 @@ def plot_belief(filename_base):
             plt.subplot(6, 3, 6 + digit_id + 1)
             plt.imshow(belief[:, :, digit_id], vmin=0.0, vmax=1.0)
             plt.text(10, 10, "BG" if digit_id == 10 else str(digit_id), fontsize=20, color="white")
-
-	print filename_base.format(i)
-        print query_belief_fns[0](glimpses.reshape(6, config.GLIMPSE_SIZE) / 255.0, [glimpse_xy], [query_directions], [query_digits], [query_colors])
 
         plt.subplot(6, 3, 1)
         plt.imshow(scene.img.astype(np.uint8))
@@ -164,6 +186,19 @@ def plot_prior(filename):
     plt.close()
 
 
+def plot_directions(filename):
+    belief = direction_raster()
+    plt.figure(figsize=(10, 14))
+
+    for i, direction in enumerate(directions):
+        plt.subplot(2, 4, i + 1)
+        plt.imshow(belief[:, :, i], vmin=0.0, vmax=1.0)
+        plt.text(10, 10, direction, fontsize=20, color="white")
+
+    plt.savefig(filename, format="png", dpi=400)
+    plt.close()
+
+
 if __name__ == "__main__":
     # TODO Allow for loading a specific config file...
     for iteration in range(config.TRAINING_ITERATIONS):
@@ -192,6 +227,7 @@ if __name__ == "__main__":
             plot_belief(os.path.join(config.SAVE_DIR, "iter_{}_glimpse_{{}}_raster.png".format(iteration)))
             plot_belief_colors(os.path.join(config.SAVE_DIR, "iter_{}_glimpse_{{}}_raster_colors.png".format(iteration)))
             plot_prior(os.path.join(config.SAVE_DIR, "s0_raster.png"))
+            plot_directions(os.path.join(config.SAVE_DIR, "directions_raster.png"))
             # plot_directions(os.path.join(config.SAVE_DIR, "directions_raster.png"))
             for net in networks:
                 net.save(os.path.join(config.SAVE_DIR, "{}.npy".format(net._name)))
@@ -206,4 +242,5 @@ if __name__ == "__main__":
     plot_belief_colors(os.path.join(config.SAVE_DIR, "iter_{}_glimpse_{{}}_raster_colors.png".format(iteration)))
     # plot_directions(os.path.join(config.SAVE_DIR, "directions_raster.png"))
     plot_prior(os.path.join(config.SAVE_DIR, "s0_raster.png"))
+    plot_directions(os.path.join(config.SAVE_DIR, "directions_raster.png"))
 
