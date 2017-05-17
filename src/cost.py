@@ -17,9 +17,8 @@ import config
 from glimpse import accumulate_glimpses_over_batch
 from network import glimpse_network_output
 from position_encoding import L
-from parameters import S0
-from tasks.mnist.parameters import D_table
 from utils import tensor_softmax
+from words import S0, D_table
 
 # (batch_size, n_queries, 2)
 if config.TRAIN_TYPE == "query-based":

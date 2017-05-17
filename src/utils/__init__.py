@@ -20,11 +20,11 @@ def cartesian(*x):
     return np.array(zip(*np.where(base)))
 
 
-def init_hypervectors(n, zeros=False):
+def init_hypervectors(shape, zeros=False):
     if zeros:
-        return theano.shared(float_x(np.zeros((config.DIM, n))))
+        return theano.shared(float_x(np.zeros(shape)))
     else:
-        return theano.shared(float_x(0.01 * np.random.uniform(-1, 1, size=(config.DIM, n))))
+        return theano.shared(float_x(0.01 * np.random.uniform(-1, 1, size=shape)))
 
 
 def tensor_softmax(t, axis=-1):
@@ -33,4 +33,3 @@ def tensor_softmax(t, axis=-1):
     t = t.flatten(ndim=2)
     t = T.nnet.softmax(t.T).T.reshape(original_shape)
     return t.dimshuffle(*(range(1, t.ndim) + [0]))
-

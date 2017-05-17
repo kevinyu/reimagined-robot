@@ -1,16 +1,14 @@
 import theano.tensor as T
 
 from position_encoding import L
-# FIXME: these should come from a separate module called "words"?
-from tasks.mnist.parameters import D_table
-from tasks.mnist.query_scene import D_directions
+from words import D_table
 
 
 query_directions = T.imatrix("query_direction_idx")
 query_digits = T.imatrix("query_digits_idx")
 query_colors = T.imatrix("query_colors_idx")
 
-_direction_vectors = (D_directions
+_direction_vectors = (D_table["Directions"]
         .get_columns(query_directions)
         .dimshuffle(1, 2, 0))
 _digit_vectors = (D_table["Digits"]

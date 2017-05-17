@@ -1,4 +1,3 @@
-import cPickle
 import os
 
 import numpy as np
@@ -96,3 +95,8 @@ predict = theano.function(
         inputs=[glimpse_features],   # _ x N dimensional matrix
         outputs=glimpse_network_output,
         allow_input_downcast=True)
+
+
+def save_nets():
+    for net in networks:
+        net.save(os.path.join(config.SAVE_DIR, "{}.npy".format(net._name)))

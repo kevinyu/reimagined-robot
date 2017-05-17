@@ -6,9 +6,12 @@ import theano.tensor as T
 
 import config
 from properties import Color
-from parameters import D_table
 from utils import float_x, init_hypervectors
 from utils.complex import ComplexTuple
+from words import D_table
+
+
+D_directions = D_table["Directions"]
 
 
 u = np.pi/4.0
@@ -22,22 +25,6 @@ directions = {
     "left": -2.0 * u,
     "below-left": -1.0 * u,
 }
-
-if os.path.exists(os.path.join(config.SAVE_DIR, "D_directions.npy")):
-    d_array = np.load(os.path.join(config.SAVE_DIR, "D_directions.npy"))
-    D_directions = ComplexTuple(
-        theano.shared(float_x(d_array[0])),
-        theano.shared(float_x(d_array[1]))
-    )
-else:
-    D_directions = ComplexTuple(
-        init_hypervectors(len(directions), zeros=True),
-        init_hypervectors(len(directions), zeros=True)
-    )
-
-def save_directions():
-    d_filename = os.path.join(config.SAVE_DIR, "D_directions")
-    np.save(d_filename, np.array(list(D_directions.get_value())))
 
 
 _direction_keys = {
@@ -96,10 +83,6 @@ def query(scene_contents, row_idx, direction, threshold=0.2, speak=False):
         if speak:
             print "nothing"
         return None
-
-
-from parameters import _D_combined
-D_real, D_imag = _D_combined.real, _D_combined.imag
 
 
 def generate_queries(scene, n):

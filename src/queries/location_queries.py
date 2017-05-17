@@ -2,7 +2,6 @@ import theano.tensor as T
 
 import config
 from position_encoding import L
-from tasks.mnist.parameters import D_table
 
 
 sample_positions = T.ftensor3("sample_positions")
