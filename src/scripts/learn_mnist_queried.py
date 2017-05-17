@@ -13,7 +13,7 @@ assert config.TASK == "MNIST"
 from tasks.mnist.generate_scenes import make_one, make_batch
 from tasks.mnist.parameters import D_table
 from tasks.mnist.query_scene import save_directions, directions, D_directions, _direction_keys
-from network import glimpse_network_output, glimpse_features, networks
+from network import glimpse_network_output, glimpse_features, networks, predict
 from parameters import S0, save_params
 from position_encoding import L
 from train_queries import train, query_belief_fns
@@ -22,11 +22,6 @@ from utils.complex import ComplexTuple
 from position_encoding import get_U
 from properties import Color
 
-
-predict = theano.function(
-        inputs=[glimpse_features],   # _ x N dimensional matrix
-        outputs=glimpse_network_output,
-        allow_input_downcast=True)
 
 dir_lookup = dict((v, k) for k, v in _direction_keys.items())
 

@@ -60,9 +60,6 @@ class GlimpseModel(object):
 
         self.output = ComplexTuple(layer_real.output, layer_imag.output)
 
-        self.L1_weight_norm = T.mean([abs(layer.W).sum() for layer in self.layers])
-        self.L2_weight_norm = T.mean([(layer.W ** 2).sum() for layer in self.layers])
-
     @property
     def params(self):
         all_params = []
@@ -95,3 +92,7 @@ for net in networks[1:]:
 
 glimpse_network_output = output_sum
 
+predict = theano.function(
+        inputs=[glimpse_features],   # _ x N dimensional matrix
+        outputs=glimpse_network_output,
+        allow_input_downcast=True)
