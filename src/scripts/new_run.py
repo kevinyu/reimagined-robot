@@ -1,7 +1,6 @@
 import os
 
 import config
-
 from tasks.mnist.generate_scenes import make_one, make_batch
 from tasks.mnist.query_scene import directions, _direction_keys
 from network import glimpse_network_output, predict, save_nets

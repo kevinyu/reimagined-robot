@@ -38,7 +38,7 @@ class PositionEncoder(object):
         Returns a spatial map of dimension (x, y, _)
         """
         if Y.real.ndim == 1:
-            Y = Y.reshape((Y.shape, 1))
+            Y = Y.reshape((Y.real.shape[0], 1))
         n = int(np.sqrt(config.DIM))
         _, z  = Y.real.shape
         result = fft_keepdims(Y.T.reshape((z, n, n)), inverse=True).dimshuffle(1, 2, 0)

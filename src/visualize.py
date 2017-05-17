@@ -1,4 +1,3 @@
-
 import numpy as np
 import matplotlib
 matplotlib.use('Agg')
@@ -41,7 +40,7 @@ def plot_belief_digits(filename_base):
 
         for digit_id in range(11):
             plt.subplot(6, 3, 6 + digit_id + 1)
-            plt.imshow(belief[:, :, digit_id], vmin=0.0, vmax=1.0)
+            plt.imshow(np.fft.fftshift(belief[:, :, digit_id]), vmin=0.0, vmax=1.0)
             plt.text(10, 10, "BG" if digit_id == 10 else str(digit_id), fontsize=20, color="white")
 
         plt.subplot(6, 3, 1)
@@ -92,7 +91,7 @@ def plot_belief_colors(filename_base):
 
         for color_id in range(5):
             plt.subplot(4, 3, 6 + color_id + 1)
-            plt.imshow(belief[:, :, color_id], vmin=0.0, vmax=1.0)
+            plt.imshow(np.fft.fftshift(belief[:, :, color_id]), vmin=0.0, vmax=1.0)
             plt.text(10, 10, "BG" if color_id == 4 else Color.params[color_id], fontsize=20, color="white")
 
         plt.subplot(4, 3, 1)
@@ -124,7 +123,7 @@ def plot_directions(filename):
     plt.figure(figsize=(10, 14))
     for i, direction in enumerate(directions):
         plt.subplot(2, 4, i + 1)
-        plt.imshow(belief[:, :, i], vmin=0.0, vmax=1.0)
+        plt.imshow(np.fft.fftshift(belief[:, :, i]), vmin=0.0, vmax=1.0)
         plt.text(10, 10, direction, fontsize=20, color="white")
 
     plt.savefig(filename, format="png", dpi=400)
