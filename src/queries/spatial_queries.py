@@ -30,13 +30,16 @@ def query_at_position(S):
     5. fft region of interest to get position-like vector
     6. unbind scene with new position vector to get answer
     """
+    # batch_size, n_glimpses, n_queries, N
     _reference_digit = S * _digit_vectors.conj.dimshuffle(0, "x", 1, 2)
     _reference_color = S * _color_vectors.conj.dimshuffle(0, "x", 1, 2)
 
-    # _reference_map = L.IFFT(_reference_digit) * L.IFFT(_reference_color)
-    # TODO: cleanup code here??
-    # _reference_vector = L.FFT(_reference_map)
-    _reference_vector = _reference_digit + _reference_color
+    _reference_map = (
+            L.IFFT(_reference_digit.dimshuffle(3, 0, 1, 2)) *
+            L.IFFT(_reference_color.dimshuffle(3, 0, 1, 2))
+    )
+    # TODO: cleanup position vector here??
+    _reference_vector = L.FFT(_reference_map)
 
     # (batch_size, n_queries, N)
     query_positions_hd = (

@@ -1,6 +1,8 @@
 import theano.tensor as T
 import theano.gpuarray.fft as Tfft
 
+from utils.complex import ComplexTuple
+
 
 def fft_keepdims(xr, xi=None, inverse=False):
     """
@@ -23,4 +25,4 @@ def fft_keepdims(xr, xi=None, inverse=False):
         if inverse:
             return xfrr-xfii, -(xfri+xfir)
         else:
-            return xfrr-xfii, xfri+xfir
+            return ComplexTuple(xfrr-xfii, xfri+xfir)
