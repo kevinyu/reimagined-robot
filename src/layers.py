@@ -18,6 +18,7 @@ class Layer(object):
         self.b = b if b is not None else self._generate_bias(self.n_out)
 
         z = T.dot(input, self.W) + self.b
+
         self.output = self.activation(z) if self.activation else z
 
     def _generate_weights(self, n_in, n_out):

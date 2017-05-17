@@ -21,6 +21,8 @@ class Color(Property):
     @classmethod
     def transform(cls, obj, param):
         color = cls.params[param]
+        scale = np.max(obj)
+        obj = obj / float(scale)
 
         # if the thing is already 3 color channel, take the max intensity
         # intensity and then remap to the right color
@@ -40,8 +42,7 @@ class Color(Property):
 
 def rand_color(obj):
     """take a 1 color channel image, and turn it into a random color"""
-    scale = np.max(obj)
-    obj = 255. * obj / scale
+    obj = obj / float(np.max(obj))
 
     color = np.random.choice(["red", "green", "blue", "yellow"])
     if color == "red":

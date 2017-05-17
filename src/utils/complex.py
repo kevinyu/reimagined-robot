@@ -87,3 +87,16 @@ class ComplexTuple(tuple):
                 return _fn 
             else:
                 return ComplexTuple(_a1, _a2)
+
+    def get_rows(self, selector):
+        return ComplexTuple(
+                self[0][selector],
+                self[1][selector]
+        )
+
+    def get_columns(self, selector):
+        return ComplexTuple(
+                self[0][:, selector],
+                self[1][:, selector]
+        )
+

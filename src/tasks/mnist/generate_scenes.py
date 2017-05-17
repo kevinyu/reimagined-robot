@@ -7,6 +7,8 @@ from sklearn.datasets import fetch_mldata
 import config
 from properties import properties, rand_color
 from utils import cartesian
+from query_scene import generate_queries
+from glimpse import take_glimpses
 
 
 data_home = os.path.join(os.getenv("PROJECT_ROOT"), "media", "datasets", "mnist")
@@ -57,8 +59,9 @@ class MNISTScene(object):
             Tuple pairs for each property and index of paramter value
             e.g. [("Color", 0), ... ]
         """
+        dx, dy = obj.shape[:2]
         self.add_thing_at(x, y, obj)
-        self.contents.append((digit_id, x, y, digit_properties))
+        self.contents.append((digit_id, x + dx /2, y + dy/2, digit_properties))
 
     def add_fragment_noise(self, n, max_fragment_size):
         choices = cartesian(self.x_max - max_fragment_size, self.y_max - max_fragment_size)
@@ -75,25 +78,24 @@ class MNISTScene(object):
 
     def near_digits(self, within=None):
         """Return a grid the same shape as image with 1's indicating they are near a digit"""
-        result = np.zeros_like(self.img)
+        result = np.zeros(self.img.shape[:2])
         if within is None:
-            within = self.label_radius
+            within = config.LABEL_RADIUS
+        # FIXME: x y flip flop?
         y, x = np.meshgrid(np.arange(self.x_max), np.arange(self.y_max))
         if not self.digit_locations:
-            result = np.ones_like(self.img)
+            result = np.ones(self.img.shape[:2])
         for digit_x, digit_y in self.digit_locations:
-            d_half = self.DIGIT_SIZE / 2.0
-            center_x, center_y = (digit_x + d_half, digit_y + d_half)
-            condition = (np.power(x - center_x, 2) + np.power(y - center_y, 2)) <= np.power(within, 2)
+            condition = (np.power(x - digit_x, 2) + np.power(y - digit_y, 2)) <= np.power(within, 2)
             result[np.where(condition)] = 1
         return result
 
     def padded(self, padding=None):
-        result = np.zeros_like(self.img)
+        result = np.zeros(self.img.shape[:2])
         if padding is None:
             padding = self.DIGIT_SIZE / 2
 
-        y, x = np.meshgrid(np.arange(self.x_max), np.arange(self.y_max))
+        x, y = np.meshgrid(np.arange(self.x_max), np.arange(self.y_max))
         condition = (
                 (padding <= x) *
                 (x < (self.x_max - padding)) *
@@ -111,6 +113,31 @@ class MNISTScene(object):
             choices = zip(*np.where(self.near_digits(within=within)))
         picked = np.random.choice(len(choices), size=n)
         return [choices[pick] for pick in picked]
+
+    def get_label_at(self, x, y):
+        """Return a two one hot vectors for the digit/color
+        whose presence is present at position (x, y)
+        """
+        # FIXME hardcoding digit and color sizes
+        one_hot = np.zeros(11)
+        one_hot_color = np.zeros(5)
+
+        for digit_id, center_x, center_y, props in self.contents:
+            color_idx = props[0][1]
+            dist = np.power(x - center_x, 2) + np.power(y - center_y, 2)
+
+            if dist < np.power(config.LABEL_RADIUS, 2):
+                one_hot[int(digit_id)] = 1.0
+                one_hot_color[color_idx] = 1.0
+
+        if one_hot.sum() == 0.0:
+            one_hot[-1] = 1.0
+
+        if one_hot_color.sum() == 0.0:
+            one_hot_color[-1] = 1.0
+
+        return one_hot / one_hot.sum(), one_hot_color / one_hot_color.sum()
+
 
 
 def generate_scene(img_shape):
@@ -140,11 +167,86 @@ def generate_scene(img_shape):
 
         if scene.digit_locations:
             nearest_dist = np.sqrt(np.min([(center_x - x)**2 + (center_y - y)**2 for x, y in scene.digit_locations]))
-            if nearest_dist < np.max([dx, dy]):
+            if nearest_dist < 30.0:
                 # skip becuase its too damn close to another digit
                 continue
 
         scene.add_digit_at(put_x, put_y, obj, mnist_labels[idx], props_info)
 
     return scene
+
+
+def make_one(glimpse_strategy=None):
+    scene = generate_scene(config.IMG_SIZE)
+
+    if config.NOISE_FRAGMENTS:
+        scene.add_fragment_noise(config.NOISE_FRAGMENTS, config.MAX_NOISE_SIZE)
+
+    # glimpse locs is 2 x n_glimpses
+    # FIXME: need to fix the take_glimpses code to use the new MNISTScene object...
+    # and to work with three color channels
+    glimpse_data, glimpse_locs = take_glimpses(
+            scene,
+            glimpse_width=config.GLIMPSE_WIDTH,
+            n_glimpses=config.GLIMPSES,
+            strategy=glimpse_strategy or config.GLIMPSE_STRATEGY)
+
+    if config.TRAIN_TYPE == "query-based":
+        query_directions, query_digits, query_colors, digit_labels, color_labels = generate_queries(
+                scene, config.N_QUERIES)
+
+        return scene, glimpse_data, glimpse_locs.T, query_directions, query_digits, query_colors, digit_labels, color_labels
+    else:
+        # sample locs is 2 x n_samples
+        sample_data_digits, sample_data_color, sample_locs = take_samples(
+                scene,
+                n_samples=config.SAMPLES,
+                strategy=config.SAMPLE_STRATEGY,
+                within=config.SAMPLE_RADIUS)
+        return scene, glimpse_data, glimpse_locs.T, sample_locs.T, sample_data_digits, sample_data_color
+
+
+def make_batch(n):
+    datas = []
+    for _ in range(n):
+        datas.append(make_one())
+    return [np.array(a) for a in zip(*datas)]
+
+
+def take_samples(scene, n_samples=1, strategy="smart", within=None):
+    """Sample one hot vectors at various points in a scene
+
+    Params:
+    scene (mnist_scene.MNISTScene)
+    n_samples (int, default=1)
+        Number of samples to take
+    strategy (str, "smart" or "uniform")
+        Take samples near digits only, or just uniformly throughout image
+
+    Returns:
+    one_hot (np.array, n_samples x 11)
+        one hot vectors corresponding to digit identities in image
+    sample_locations (np.array, n_samples x 2)
+    """
+    # FIXME: hardcoding one hot lengths and numbers
+    one_hot = np.zeros((n_samples + 30, 11))
+    one_hot_colors = np.zeros((n_samples + 30, 5))
+
+    if strategy == "smart":
+        sample_locations = scene.sample_near_digits(n=n_samples + 30, within=within)
+    elif strategy == "uniform":
+        choices = cartesian(scene.img.shape[0], scene.img.shape[1])
+        sample_locations = [choices[np.random.choice(len(choices))] for _ in range(n_samples + 30)]
+    elif strategy == "mixed":
+        choices = cartesian(scene.img.shape[0], scene.img.shape[1])
+        odd = n_samples % 2
+        sample_locations = (
+                scene.sample_near_digits(n=n_samples, within=within) +
+                [choices[np.random.choice(len(choices))] for _ in range(30)]
+        )
+
+    for i, (x, y) in enumerate(sample_locations):
+        one_hot[i], one_hot_colors[i] = scene.get_label_at(x, y)
+
+    return one_hot, one_hot_colors, np.array(sample_locations).T
 
