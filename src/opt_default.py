@@ -23,6 +23,7 @@ ROTATION_CHOICES = 0
 
 GLIMPSE_WIDTH = 29
 GLIMPSES = 6
+GLIMPSE_JITTER = 10  # how much off digit center we allow the glimpses to be
 
 SAMPLES = 300  # training samples per scene
 SAMPLE_RADIUS = 12.0
