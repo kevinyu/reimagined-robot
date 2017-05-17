@@ -10,6 +10,8 @@ def fft_keepdims(xr, xi=None, inverse=False):
     :param xr, xi: real and imaginary inputs. Shape is assumed to be (batchsize, x, y)
     :return: real and imaginary parts of , both of shape (batchsize, x, y)
     """
+    if isinstance(xr, ComplexTuple):
+        xr, xi = xr.real, xr.imag
     if xi is None:
         rfft = Tfft.curfft(xr, norm='ortho')  # (batch, x, y, 2)
         rfft_rev = rfft[:, :, ::-1, :]
@@ -26,3 +28,4 @@ def fft_keepdims(xr, xi=None, inverse=False):
             return ComplexTuple(xfrr-xfii, -(xfri+xfir))
         else:
             return ComplexTuple(xfrr-xfii, xfri+xfir)
+

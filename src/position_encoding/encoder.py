@@ -20,33 +20,26 @@ class PositionEncoder(object):
         return ComplexTuple(np.cos(phi), np.sin(phi))
 
     def FFT(self, X):
-        """Convert a spatial map Y (n x m x ...) into a hypervector
+        """Convert a spatial map of dimension (x, y, _) into a hypervector
 
         (first two dims must be spatial)
+
+        Returns a hypervector array of dimension (N, _)
         """
-
-        original_shape = X.shape  # (X, Y, ... )
-        ndim = X.real.ndim
-        X = X.flatten(ndim=3)     # (X, Y, a)
-        result = fft_keepdims(X.dimshuffle(2, 0, 1))  # (a, X, Y) -> (a, sqrt(N), sqrt(N))
-
-        # (sqrt(N), sqrt(N), a) -> (X, Y, ...) -> (N, ...)
-        return result.dimshuffle(1, 2, 0).reshape(original_shape).reshape((config.DIM), ndim=ndim-1)
+        _, _, z  = X.shape
+        result = fft_keepdims(X.dimshuffle(2, 0, 1)).dimshuffle(1, 2, 0)
+        return result.reshape((config.DIM, z))
 
     def IFFT(self, Y):
-        """Convert a hypervector (N x ...) into a spatial map
+        """Convert a hypervector (N, _) into a spatial map
         
         first dim must but hyperdim
-        """
-        original_shape = Y.real.shape            # (N, ...)
-        ndim = Y.real.ndim
-        n = int(np.sqrt(config.DIM))
-        Y.reshape((n, n), ndim=ndim + 1)  # (sqrt(N), sqrt(N), ...)
-        Y = Y.flatten(ndim=3)                    # (sqrt(N), sqrt(N), a)
-        Y = Y.dimshuffle(2, 0, 1)                # (a, sqrt(N), sqrt(N))
-        result = fft_keepdims(Y.real, Y.imag, inverse=True)
-        result = result[0]     # (a, X, Y)
 
-        # (X, Y, a) -> (N, ...) -> (X, Y, ...)
-        return result.dimshuffle(1, 2, 0).reshape(original_shape).reshape((n, n), ndim=ndim + 1)
-   
+        Returns a spatial map of dimension (x, y, _)
+        """
+        if Y.real.ndim == 1:
+            Y = Y.reshape((Y.shape, 1))
+        n = int(np.sqrt(config.DIM))
+        _, z  = Y.real.shape
+        result = fft_keepdims(Y.T.reshape((z, n, n)), inverse=True).dimshuffle(1, 2, 0)
+        return result

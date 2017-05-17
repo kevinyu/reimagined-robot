@@ -1,6 +1,8 @@
+import numpy as np
 import theano.tensor as T
 
-from position_encoding import L
+import config
+from position_encoding.fft import fft_keepdims
 from words import D_table
 
 
@@ -34,12 +36,19 @@ def query_at_position(S):
     _reference_digit = S * _digit_vectors.conj.dimshuffle(0, "x", 1, 2)
     _reference_color = S * _color_vectors.conj.dimshuffle(0, "x", 1, 2)
 
+    batch_size, n_glimpses, n_queries, _ = _reference_digit.real.shape
+    n = int(np.sqrt(config.DIM))
+
+    reshaper = (batch_size * n_glimpses * n_queries, n, n)
+
     _reference_map = (
-            L.IFFT(_reference_digit.dimshuffle(3, 0, 1, 2)) *
-            L.IFFT(_reference_color.dimshuffle(3, 0, 1, 2))
-    )
+            fft_keepdims(_reference_digit.reshape(reshaper), inverse=True).real *
+            fft_keepdims(_reference_color.reshape(reshaper), inverse=True).real
+    )  # outcome is (_, n, n)
     # TODO: cleanup position vector here??
-    _reference_vector = L.FFT(_reference_map)
+    _reference_vector = fft_keepdims(_reference_map).reshape(
+            (batch_size, n_glimpses, n_queries, config.DIM)
+    )
 
     # (batch_size, n_queries, N)
     query_positions_hd = (
