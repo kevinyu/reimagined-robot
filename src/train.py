@@ -25,7 +25,9 @@ learn_params = [
 
 if config.TRAIN_TYPE == "query-based":
     learn_directions = [D_table["Directions"].real, D_table["Directions"].imag]
-    params = network_params + learn_params + learn_directions
+    # params = network_params + learn_params + learn_directions
+    # TODO: we should be able to learn everything at once
+    params = learn_directions
     updates = adam(cost, params)
     train = theano.function(
             inputs=[

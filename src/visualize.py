@@ -16,7 +16,8 @@ from words import D_table, S0
 
 
 def plot_belief_digits(filename_base):
-    scene, glimpses, glimpse_xy, sample_xy, digit_labels, color_labels = make_one()
+    trial_data = make_one()
+    scene, glimpses, glimpse_xy = trial_data[:3]
     glimpses = glimpses / 255.0
 
     # gather three glimpses
@@ -66,7 +67,8 @@ def plot_belief_digits(filename_base):
 
 def plot_belief_colors(filename_base):
     """Make 3 plots for the state of belief after each glimpse"""
-    scene, glimpses, glimpse_xy, sample_xy, digit_labels, color_labels = make_one()
+    trial_data = make_one()
+    scene, glimpses, glimpse_xy = trial_data[:3]
     glimpses = glimpses / 255.0
 
     S = S0.get_value()
