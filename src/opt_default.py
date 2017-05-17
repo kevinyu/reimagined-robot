@@ -40,8 +40,15 @@ SAVE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "outputs")
 
 SEED = 2
 
-MAX_K = 6.0 * np.pi
-MIN_K = 0.0
+RANDOMIZE_POSITION_ENCODING = False
+
+# This effectively adjusts how much bandwidth is devoted to representing positions.
+PLANCK_LENGTH = 2
+
+# PLANCK_LENGTH can be thought of as the smallest discernable distance:
+# All location vectors with distance > PLANCK_LENGTH will have a very small dot product.
+# It is specified in pixels
+
 COLOR_CHANNELS = 3 if "Color" in STREAMS else 1
 
 GLIMPSE_SIZE = COLOR_CHANNELS * 29 ** 2
