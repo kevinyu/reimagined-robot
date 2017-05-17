@@ -8,7 +8,7 @@ from network import predict
 from position_encoding import L
 from properties import Color
 from raster import raster_scene, raster_dict
-from tasks.mnist.query_scene import directions
+from tasks.mnist.query_scene import directions, _direction_keys
 from tasks.mnist.generate_scenes import make_one
 from utils.complex import ComplexTuple
 from words import D_table, S0
@@ -121,7 +121,7 @@ def plot_directions(filename):
     belief = raster_dict(D_directions.real, D_directions.imag)
 
     plt.figure(figsize=(10, 14))
-    for i, direction in enumerate(directions):
+    for direction, i in _direction_keys.items():
         plt.subplot(2, 4, i + 1)
         plt.imshow(np.fft.fftshift(belief[:, :, i]), vmin=0.0, vmax=1.0)
         plt.text(10, 10, direction, fontsize=20, color="white")
