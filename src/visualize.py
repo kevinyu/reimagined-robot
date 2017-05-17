@@ -17,8 +17,8 @@ from tasks.mnist.query_scene import D_directions
 # IMG_WIDTH x IMG_HEIGHT * DIM
 X = L.encode_numeric(float_x(np.array(
     np.meshgrid(
-        np.linspace(0, 1, config.IMG_WIDTH),
-        np.linspace(0, 1, config.IMG_HEIGHT)
+        np.linspace(-1, 1, config.IMG_WIDTH),
+        np.linspace(-1, 1, config.IMG_HEIGHT)
     )
 ).swapaxes(0, 2)))
 X = ComplexTuple(theano.shared(X.real), theano.shared(X.imag))
@@ -39,8 +39,8 @@ raster = theano.function(
 
 X2 = L.encode_numeric(float_x(np.array(
     np.meshgrid(
-        np.linspace(-0.5, 0.5, config.IMG_WIDTH),
-        np.linspace(-0.5, 0.5, config.IMG_HEIGHT)
+        np.linspace(-1, 1, config.IMG_WIDTH),
+        np.linspace(-1, 1, config.IMG_HEIGHT)
     )
 ).swapaxes(0, 2)))
 X2 = ComplexTuple(theano.shared(X2.real), theano.shared(X2.imag))
@@ -56,11 +56,11 @@ direction_raster = theano.function(
         allow_input_downcast=True)
 
 
-mini_scale = mini_scale
+mini_scale = 4
 miniX = L.encode_numeric(float_x(np.array(
     np.meshgrid(
-        np.linspace(0, 1, config.IMG_WIDTH / mini_scale),
-        np.linspace(0, 1, config.IMG_HEIGHT / mini_scale)
+        np.linspace(-1, 1, config.IMG_WIDTH / mini_scale),
+        np.linspace(-1, 1, config.IMG_HEIGHT / mini_scale)
     )
 ).swapaxes(0, 2)))
 miniX = ComplexTuple(theano.shared(miniX.real), theano.shared(miniX.imag))

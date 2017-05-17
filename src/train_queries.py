@@ -23,7 +23,7 @@ from visualize import X, miniX, Xinv, mini_scale
 
 # 2D glimpse positions (batch_size x n_glimpses x 2)
 glimpse_positions = T.ftensor3("glimpse_positions")
-glimpse_positions_hd = L.encode(config.POS_SCALE(glimpse_positions)
+glimpse_positions_hd = L.encode(config.POS_SCALE(glimpse_positions))
 
 
 
@@ -59,6 +59,7 @@ if config.TRAIN_TYPE == "query-based":
     # this is where i first unbind digit+color. sharpen up in
     # spatial domain and pass thru sigmoid.
     # then go back to HD domain and bind
+    '''
     _unbound_loc = S * (_digit_vectors + _color_vectors).conj.dimshuffle(0, "x", 1, 2)
 
     # (X Y N) dot (batch glimpses queries N)
@@ -77,13 +78,15 @@ if config.TRAIN_TYPE == "query-based":
     ).dimshuffle(1, 2, 3, 0)
 
     query_loc = _direction_vectors.dimshuffle(0, "x", 1, 2) * _unbound_loc
-    # query_vectors = (_direction_vectors.conj * (_digit_vectors + _color_vectors))
+    '''
+    query_vectors = (_direction_vectors.conj * (_digit_vectors + _color_vectors))
 
-    queried = S * query_loc.conj
+    # queried = S * query_loc.conj
+    queried = S * S.conj * query_vectors.dimshuffle(0, "x", 1, 2)
 else:
     # 2D sample positions (batch_size x n_samples x 2)
     sample_positions = T.ftensor3("sample_positions")
-    sample_positions_hd = L.encode(sample_positions / config.POS_SCALE)
+    sample_positions_hd = L.encode(config.POS_SCALE(sample_positions))
 
     queried = S * sample_positions_hd.dimshuffle(0, "x", 1, 2).conj
 
@@ -115,6 +118,7 @@ for stream, q_labels in zip(config.STREAMS, query_labels):
 
 if config.TRAIN_TYPE == "query-based":
     params = network_params + learn_params + learn_directions#  + [theta]
+    # params = learn_directions#  + [theta]
     updates = adam(cost, params)
 
     train = theano.function(

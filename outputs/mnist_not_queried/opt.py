@@ -14,7 +14,7 @@ STREAMS = [
     "Color",
 ]
 N_QUERIES = 14
-TRAIN_TYPE = "query-based"
+TRAIN_TYPE = "non-query-based"
 
 COLOR_CHOICES = 2  # max 7
 SCALE_CHOICES = 0
@@ -53,7 +53,8 @@ else:
 # Size of images in dataset
 IMG_WIDTH = IMG_SIZE[0]
 IMG_HEIGHT = IMG_SIZE[1]
-POS_SCALE = float(np.max([IMG_WIDTH, IMG_HEIGHT]))
+POS_SCALEFACTOR = float(np.max([IMG_WIDTH, IMG_HEIGHT])) / 2.0
+POS_SCALE = lambda x: -1 + (x / POS_SCALEFACTOR)
 
 NOISE_FRAGMENTS = 0 # 10
 MAX_NOISE_SIZE = 8

@@ -69,7 +69,7 @@ def angle(dx, dy):
 
 
 def f(d, theta):
-    return np.maximum(0.0, (np.abs(np.cos(theta)) > .6) * (100.0 / d) * np.cos(theta))
+    return np.maximum(0.0, ((d > 30.0) & (np.abs(np.cos(theta)) > .6)) * (120.0 / d) * np.cos(theta)**3)
 
 
 def query(scene_contents, row_idx, direction, threshold=0.2, speak=False):
