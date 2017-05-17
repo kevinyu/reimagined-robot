@@ -16,13 +16,13 @@ def fft_keepdims(xr, xi=None, inverse=False):
         rfft_rev = T.roll(rfft_rev[:, ::-1, :, :], 1, axis=1)
         rfft_r = T.concatenate([rfft[:, :, :, 0], rfft_rev[:, :, 1:-1, 0]], axis=2)
         rfft_i = T.concatenate([rfft[:, :, :, 1], -rfft_rev[:, :, 1:-1, 1]], axis=2)
-        return rfft_r, rfft_i
+        return ComplexTuple(rfft_r, rfft_i)
     else:
         xfrr, xfri = fft_keepdims(xr)
         if inverse:
             xi *= -1.
         xfir, xfii = fft_keepdims(xi)
         if inverse:
-            return xfrr-xfii, -(xfri+xfir)
+            return ComplexTuple(xfrr-xfii, -(xfri+xfir))
         else:
             return ComplexTuple(xfrr-xfii, xfri+xfir)
