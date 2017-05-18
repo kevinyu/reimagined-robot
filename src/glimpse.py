@@ -130,14 +130,18 @@ def take_glimpses(scene, glimpse_width, n_glimpses=1, strategy="smart"):
     for i, (x, y) in enumerate(scene.digit_locations[:n_glimpses]):
         # allow up to 10 pixels of jitter in either direction
         MAX_JITTER = config.GLIMPSE_JITTER
-        x_dist_to_low_edge = np.min([x, MAX_JITTER])
-        x_dist_to_high_edge = np.min([scene.img.shape[0] - x, MAX_JITTER])
-        y_dist_to_low_edge = np.min([y, MAX_JITTER])
-        y_dist_to_high_edge = np.min([scene.img.shape[1] - y, MAX_JITTER])
-        jittered_x = x + np.random.choice(
-                range(-x_dist_to_low_edge, x_dist_to_high_edge))
-        jittered_y = y + np.random.choice(
-                range(-y_dist_to_low_edge, y_dist_to_high_edge))
+        if not MAX_JITTER:
+            jittered_x = x
+            jittered_y = y
+        else:
+            x_dist_to_low_edge = np.min([x, MAX_JITTER])
+            x_dist_to_high_edge = np.min([scene.img.shape[0] - x, MAX_JITTER])
+            y_dist_to_low_edge = np.min([y, MAX_JITTER])
+            y_dist_to_high_edge = np.min([scene.img.shape[1] - y, MAX_JITTER])
+            jittered_x = x + np.random.choice(
+                    range(-x_dist_to_low_edge, x_dist_to_high_edge))
+            jittered_y = y + np.random.choice(
+                    range(-y_dist_to_low_edge, y_dist_to_high_edge))
 
         locs.append([jittered_x, jittered_y])
         glimpses[i] = glimpse(
