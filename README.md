@@ -1,32 +1,38 @@
 ## Setup
 
-Set the src/ directory to the front of your PYTHONPATH
+### 1. Clone the repository
 
-Can do this by doing `export PYTHONPATH=<path-to-src>`
+### 2. Set up a virtualenv or conda environment
 
-To have conda environment automatically set your PYTHONPATH, edit your conda env activation script at (cd) `~/miniconda2/envs/<env-name>/`
+Create a new virtual environment. Easiest is to use anaconda and `conda create --name <env-name`
 
-* Add two directories, `etc/conda/activate.d` and `etc/conda/deactivate.d`
+### 3. Install dependencies
 
-* `touch etc/conda/activate.d/env_vars.sh`
+Activate the virtual environment using `source activate <env-name`.
 
-* `touch etc/conda/deactivate.d/env_vars.sh`
+Requires at least these... there might be more
 
-* In `etc/conda/activate.d/env_vars.sh`, add the lines
+```
+numpy
+scipy
+scikit-learn
+skikit-cuda
+matplotlib
+theano
+```
 
-    ```
-    export PROJECT_ROOT="<path-to-repo-root>"
-    export PYTHONPATH="${PROJECT_ROOT}/src"
-    ```
+Also must install GPU stuffs (CUDA). Requires CuDNN also or error stuff will happen.
 
-* In `etc/conda/deactivate.d/env_vars.sh`, add the line `unset PYTHONPATH`
+### 4. Set up PYTHONPATH and PROJECT_ROOT environment variables
 
-    ```
-    unset PROJECT_ROOT
-    unset PYTHONPATH
-    ```
+If using a conda environemnt, just activate the environment and run `./setup.sh` from the root project directory. The envirnoment's activation script (run when you do `source activate <env-name` will always set the `PYTHONPATH` and `PROJECT_ROOT` paths correctly, and `source deactivate` will unset them.
 
- Now, you can enter environment with `source activate <env-name>` and leave with `source deactivate`
+If not using a conda environment, just make sure the two environment variables are set correctly before running anything.
+
+```
+export PROJECT_ROOT="<path-to-repository-root>"
+export PYTHONPATH="${PROJECT_ROOT}/src"
+```
 
 ## Running Stuff
 
@@ -34,9 +40,9 @@ To have conda environment automatically set your PYTHONPATH, edit your conda env
 
 * Create a outputs dir in there `mkdir outputs/my_new_run/outputs`
 
-* Copy the file `src/config_template.py` to `outputs/<name>/opt.py`
+* Copy the file `src/opt_default.py` to `outputs/<name>/opt.py`
 
-* Edit the `opt.py` file's parameters. Make sure to set TASK to either "MNIST" or "SHAPES"
+* Edit the `opt.py` file's parameters. Make sure to set TASK to either "MNIST" cuz "SHAPES" don't work right now.
 
 ### MNIST
 
@@ -44,23 +50,11 @@ Make sure TASK is set to "MNIST" in the opt.py file of the output directory.
 
 Then run by passing the opt.py path to the script `python scripts/learn_mnist_dataset.py../outputs/my_new_run/opt.py`
 
-### Shapes shapes shapes
-
-Make sure TASK is set to "SHAPES" in the opt.py file of the output directory.
-
-Then run by passing the opt.py path to the script `python scripts/learn_shapes_dataset.py../outputs/my_new_run/opt.py`
-
-Open shapes/properties/__init__.py to modify what shapes and settings are in play and shit
-
-    * modify the individual classes to change what transformations are available
-
-    * modify the properties list in that file to change which properties are available
-
 ## Help on getting theano to use gpu
 
 (this hints for myself on how to use the gpu... dont listen to me I broke my computer)
 
-Put this in a ~/.theanorc (replace cuda with where cuda is)
+Put this in a ~/.theanorc (replace cuda with where your cuda is)
 
 ```
 [nvcc]
@@ -70,6 +64,6 @@ flags=-D_FORCE_INLINES
 root=/usr/loca/cuda-8.0/
 
 [global]
-device = gpu
+device = cuda
 floatX = float32
 ```
