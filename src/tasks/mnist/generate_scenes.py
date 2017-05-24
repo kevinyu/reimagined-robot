@@ -6,7 +6,6 @@ from sklearn.datasets import fetch_mldata
 
 import config
 from properties import properties, rand_color
-from utils import cartesian
 from query_scene import generate_queries
 from glimpse import take_glimpses
 
@@ -64,13 +63,15 @@ class MNISTScene(object):
         self.contents.append((digit_id, x + dx /2, y + dy/2, digit_properties))
 
     def add_fragment_noise(self, n, max_fragment_size):
-        choices = cartesian(self.x_max - max_fragment_size, self.y_max - max_fragment_size)
+        x_max = self.x_max - max_fragment_size
+        y_max = self.y_max - max_fragment_size
         for i in range(n):
             digit_idx = np.random.randint(mnist_images.shape[0])
-            fragment_size = np.random.choice(np.arange(config.MIN_NOISE_SIZE, max_fragment_size))
-            pick_x, pick_y = np.random.choice(np.arange(28 - fragment_size), size=2)
+            fragment_size = np.random.randint(config.MIN_NOISE_SIZE, max_fragment_size)
+            pick_x, pick_y = np.random.randint(28 - fragment_size, size=2)
             fragment = rand_color(mnist_images[digit_idx][pick_x:pick_x + fragment_size, pick_y:pick_y + fragment_size])
-            x, y = choices[np.random.choice(len(choices))]
+            x = np.random.randint(x_max)
+            y = np.random.randint(y_max)
             if np.random.random() > 0.5:
                 self.add_thing_at(x, y, fragment)
             else:
@@ -111,7 +112,7 @@ class MNISTScene(object):
             choices = zip(*np.where(self.near_digits(within=within) * self.padded(padding)))
         else:
             choices = zip(*np.where(self.near_digits(within=within)))
-        picked = np.random.choice(len(choices), size=n)
+        picked = np.random.randint(len(choices), size=n)
         return [choices[pick] for pick in picked]
 
     def get_label_at(self, x, y):
@@ -157,11 +158,9 @@ def generate_scene(img_shape):
             props_info.append([prop.__name__, param])
 
         dx, dy = obj.shape[:2]
-        choices = cartesian(*[len(v) for v in scene.valid_xy(obj)])
-        # TODO only use this when debugging, this just centers the image in every scene
-        # choices = [(30, 60)]
 
-        put_x, put_y = choices[np.random.choice(len(choices))]
+        put_x = np.random.randint(scene.x_max - dx)
+        put_y = np.random.randint(scene.y_max - dy)
 
         center_x, center_y = put_x + dx / 2.0, put_y + dy / 2.0
 
@@ -232,17 +231,19 @@ def take_samples(scene, n_samples=1, strategy="smart", within=None):
     one_hot = np.zeros((n_samples + 30, 11))
     one_hot_colors = np.zeros((n_samples + 30, 5))
 
+    x_max = scene.img.shape[0]
+    y_max = scene.img.shape[1]
     if strategy == "smart":
         sample_locations = scene.sample_near_digits(n=n_samples + 30, within=within)
     elif strategy == "uniform":
-        choices = cartesian(scene.img.shape[0], scene.img.shape[1])
-        sample_locations = [choices[np.random.choice(len(choices))] for _ in range(n_samples + 30)]
+        sample_locations = [
+                [np.random.randint(x_max), np.random.randint(y_max)]
+                for _ in range(n_samples + 30)]
     elif strategy == "mixed":
-        choices = cartesian(scene.img.shape[0], scene.img.shape[1])
         odd = n_samples % 2
         sample_locations = (
                 scene.sample_near_digits(n=n_samples, within=within) +
-                [choices[np.random.choice(len(choices))] for _ in range(30)]
+                [[np.random.randint(x_max), np.random.randint(y_max)] for _ in range(30)]
         )
 
     for i, (x, y) in enumerate(sample_locations):

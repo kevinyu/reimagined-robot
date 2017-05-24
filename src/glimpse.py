@@ -2,7 +2,6 @@ import numpy as np
 import theano
 
 import config
-from utils import cartesian
 from utils.complex import ComplexTuple
 
 
@@ -151,9 +150,8 @@ def take_glimpses(scene, glimpse_width, n_glimpses=1, strategy="smart"):
                 glimpse_width
         ).reshape(config.GLIMPSE_SIZE)
 
-    choices = cartesian(*scene.img.shape[:2])
     sample_locations = [
-            choices[np.random.choice(len(choices))]
+            [np.random.randint(scene.img.shape[0]), np.random.randint(scene.img.shape[1])]
             for _ in range(n_glimpses)]
 
     for i, (x, y) in enumerate(sample_locations[len(scene.digit_locations):]):
