@@ -40,8 +40,8 @@ def plot_belief_digits(filename_base):
 
         for digit_id in range(11):
             plt.subplot(6, 3, 6 + digit_id + 1)
-            plt.imshow(np.fft.fftshift(belief[:, :, digit_id]), vmin=0.0, vmax=1.0)
-            plt.text(10, 10, "BG" if digit_id == 10 else str(digit_id), fontsize=20, color="white")
+            plt.imshow(np.fft.fftshift(belief[:, :, digit_id]).T, vmin=0.0, vmax=1.0)
+            plt.text(10, 10, "BG" if digit_id == 10 else str(digit_id), fontsize=14, color="white")
 
         plt.subplot(6, 3, 1)
         plt.imshow(scene.img.astype(np.uint8))
@@ -50,6 +50,8 @@ def plot_belief_digits(filename_base):
             bounds_y = config.GLIMPSE_ON(y)
             plt.hlines(bounds_x, bounds_y[0], bounds_y[1], color="red")
             plt.vlines(bounds_y, bounds_x[0], bounds_x[1], color="red")
+        plt.ylim(120, 0)
+        plt.xlim(0, 120)
 
         # FIXME: why is x and y backwards... does this mess up our directions?
         for digit_id, y, x, _ in scene.contents:
@@ -61,6 +63,7 @@ def plot_belief_digits(filename_base):
         plt.imshow(entropy, vmin=0.0, vmax=np.log2(11.0))
         plt.text(10, 10, "entropy", fontsize=14, color="white")
         plt.savefig(filename_base.format(i), format="png", dpi=400)
+        plt.colorbar()
         plt.close()
 
 
@@ -91,8 +94,8 @@ def plot_belief_colors(filename_base):
 
         for color_id in range(5):
             plt.subplot(4, 3, 6 + color_id + 1)
-            plt.imshow(np.fft.fftshift(belief[:, :, color_id]), vmin=0.0, vmax=1.0)
-            plt.text(10, 10, "BG" if color_id == 4 else Color.params[color_id], fontsize=20, color="white")
+            plt.imshow(np.fft.fftshift(belief[:, :, color_id]).T, vmin=0.0, vmax=1.0)
+            plt.text(10, 10, "BG" if color_id == 4 else Color.params[color_id], fontsize=14, color="white")
 
         plt.subplot(4, 3, 1)
         plt.imshow(scene.img.astype(np.uint8))
@@ -101,6 +104,8 @@ def plot_belief_colors(filename_base):
             bounds_y = config.GLIMPSE_ON(y)
             plt.hlines(bounds_x, bounds_y[0], bounds_y[1], color="red")
             plt.vlines(bounds_y, bounds_x[0], bounds_x[1], color="red")
+        plt.ylim(120, 0)
+        plt.xlim(0, 120)
 
         # FIXME: why is x and y backwards... does this mess up our directions?
         for _, y, x, props in scene.contents:
@@ -112,6 +117,7 @@ def plot_belief_colors(filename_base):
         entropy = - np.sum(belief * np.log2(belief), axis=2)
         plt.imshow(entropy, vmin=0.0, vmax=np.log2(11.0))
         plt.text(10, 10, "entropy", fontsize=14, color="white")
+        plt.colorbar()
         plt.savefig(filename_base.format(i), format="png", dpi=400)
         plt.close()
 
@@ -123,8 +129,8 @@ def plot_directions(filename):
     plt.figure(figsize=(10, 14))
     for direction, i in _direction_keys.items():
         plt.subplot(2, 4, i + 1)
-        plt.imshow(np.fft.fftshift(belief[:, :, i]), vmin=0.0, vmax=1.0)
-        plt.text(10, 10, direction, fontsize=20, color="white")
+        plt.imshow(np.fft.fftshift(belief[:, :, i]).T, vmin=0.0, vmax=1.0)
+        plt.text(5, 5, direction, fontsize=10, color="white")
 
     plt.savefig(filename, format="png", dpi=400)
     plt.close()
