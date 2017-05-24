@@ -104,7 +104,8 @@ def generate_queries(scene, n):
 
     for _ in range(n):
         idx = np.random.choice(range(len(scene.contents)))
-        direction = np.random.choice(directions.keys())
+        # direction = np.random.choice(directions.keys())
+        direction = np.random.choice(["left", "right"])
         result = query(scene.contents, idx, direction, speak=False)
 
         digit_label = np.zeros(11)

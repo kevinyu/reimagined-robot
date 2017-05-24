@@ -146,8 +146,10 @@ def generate_scene(img_shape):
     """
     scene = MNISTScene(img_shape)
 
+    put_x = None
+
     # FIXME randomly select digits that dont overlap... ugh
-    for i in range(10):
+    for i in range(2 if config.SIMPLE_DATASET else 10):
         idx = np.random.randint(mnist_images.shape[0])
         obj = mnist_images[idx]
 
@@ -159,8 +161,15 @@ def generate_scene(img_shape):
 
         dx, dy = obj.shape[:2]
 
-        put_x = np.random.randint(scene.x_max - dx)
-        put_y = np.random.randint(scene.y_max - dy)
+        if config.SIMPLE_DATASET:
+            put_x = put_x or np.random.randint(scene.x_max - dx)
+            if i == 0:
+                put_y = np.random.randint(scene.y_max / 2 - dy)
+            elif i == 1:
+                put_y = np.random.randint(scene.y_max / 2, scene.y_max - dy)
+        else:
+            put_x = np.random.randint(scene.x_max - dx)
+            put_y = np.random.randint(scene.y_max - dy)
 
         center_x, center_y = put_x + dx / 2.0, put_y + dy / 2.0
 
